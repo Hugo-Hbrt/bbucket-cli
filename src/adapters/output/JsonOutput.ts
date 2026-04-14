@@ -3,6 +3,7 @@ import type {
   Comment,
   Commit,
   Environment,
+  EnvironmentVariable,
   MaskedBbConfig,
   Pipeline,
   Preferences,
@@ -58,6 +59,10 @@ export class JsonOutput implements IOutputPort {
 
   environmentsListed(environments: Environment[]): void {
     this.print(environments);
+  }
+
+  environmentVariablesListed(variables: EnvironmentVariable[]): void {
+    this.print(variables);
   }
 
   private print(data: unknown): void {

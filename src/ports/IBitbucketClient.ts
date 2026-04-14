@@ -3,6 +3,7 @@ import type {
   Comment,
   Commit,
   Environment,
+  EnvironmentVariable,
   Pipeline,
   PullRequest,
   PullRequestDetails,
@@ -27,4 +28,9 @@ export interface IBitbucketClient {
   listPipelines(workspace: string, repoSlug: string): Promise<Pipeline[]>;
   getLatestPipeline(workspace: string, repoSlug: string): Promise<Pipeline | null>;
   listEnvironments(workspace: string, repoSlug: string): Promise<Environment[]>;
+  listEnvironmentVariables(
+    workspace: string,
+    repoSlug: string,
+    envUuid: string,
+  ): Promise<EnvironmentVariable[]>;
 }

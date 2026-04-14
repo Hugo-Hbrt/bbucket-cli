@@ -3,6 +3,7 @@ import type {
   Comment,
   Commit,
   Environment,
+  EnvironmentVariable,
   MaskedBbConfig,
   Pipeline,
   Preferences,
@@ -87,6 +88,13 @@ export class AiOutput implements IOutputPort {
   environmentsListed(environments: Environment[]): void {
     for (const env of environments) {
       process.stdout.write(`${env.name}\t${env.uuid}\t${env.type}\n`);
+    }
+  }
+
+  environmentVariablesListed(variables: EnvironmentVariable[]): void {
+    for (const variable of variables) {
+      const value = variable.secured ? "****" : variable.value;
+      process.stdout.write(`${variable.key}=${value}\tsecured=${variable.secured}\n`);
     }
   }
 }

@@ -3,6 +3,7 @@ import type {
   Comment,
   Commit,
   Environment,
+  EnvironmentVariable,
   Pipeline,
   PipelineResult,
   PipelineState,
@@ -207,6 +208,28 @@ export class HttpBitbucketClient implements IBitbucketClient {
     const data = (await response.json()) as { values?: RawPipeline[] };
     const first = data.values?.[0];
     return first ? mapPipeline(first) : null;
+  }
+
+  async listEnvironmentVariables(
+    workspace: string,
+    repoSlug: string,
+    envUuid: string,
+  ): Promise<EnvironmentVariable[]> {
+    type RawVariable = {
+      uuid: string;
+      key: string;
+      value?: string;
+      secured?: boolean;
+    };
+    const raw = await this.fetchAllPages<RawVariable>(
+      `/2.0/repositories/${workspace}/${repoSlug}/deployments_config/environments/${envUuid}/variables?pagelen=100`,
+    );
+    return raw.map((v) => ({
+      uuid: v.uuid,
+      key: v.key,
+      value: v.value ?? "",
+      secured: v.secured ?? false,
+    }));
   }
 
   async listEnvironments(workspace: string, repoSlug: string): Promise<Environment[]> {

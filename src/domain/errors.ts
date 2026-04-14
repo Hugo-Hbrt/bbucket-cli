@@ -20,3 +20,13 @@ export class InvalidConfigError extends DomainError {
     this.userMessage = `Invalid ~/.bb-cli-config.json: ${details}`;
   }
 }
+
+export class EnvironmentNotFoundError extends DomainError {
+  readonly userMessage: string;
+
+  constructor(name: string) {
+    super(`No environment named "${name}"`);
+    this.name = "EnvironmentNotFoundError";
+    this.userMessage = `No deployment environment named "${name}". Run 'bb env list' to see available environments.`;
+  }
+}

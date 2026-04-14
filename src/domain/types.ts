@@ -78,6 +78,13 @@ export type Environment = {
   type: string;
 };
 
+export type EnvironmentVariable = {
+  uuid: string;
+  key: string;
+  value: string;
+  secured: boolean;
+};
+
 export type Pipeline = {
   buildNumber: number;
   branch: string;

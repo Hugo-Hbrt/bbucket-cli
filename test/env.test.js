@@ -68,3 +68,50 @@ describe("bb env list", () => {
     assert.match(stdout, /\{stage-uuid\}/);
   });
 });
+
+const VARIABLES_ENDPOINT = (envUuid) =>
+  `/2.0/repositories/my-ws/my-repo/deployments_config/environments/${envUuid}/variables`;
+
+function stubVariables(envUuid, values) {
+  bitbucket.stub("GET", VARIABLES_ENDPOINT(envUuid), { body: { values } });
+}
+
+function variableFixture({
+  uuid = "{var-uuid}",
+  key = "API_URL",
+  value = "https://api.example.com",
+  secured = false,
+} = {}) {
+  return { uuid, key, value, secured };
+}
+
+describe("bb env variables <env-uuid>", () => {
+  test("lists key, value, and secured status for each variable", async () => {
+    stubVariables("{prod-uuid}", [
+      variableFixture({ key: "API_URL", value: "https://api.example.com", secured: false }),
+      variableFixture({ key: "API_TOKEN", value: "", secured: true }),
+    ]);
+
+    const { code, stdout } = await sandbox.runCli(["env", "variables", "{prod-uuid}"]);
+
+    assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
+    assert.match(stdout, /API_URL/);
+    assert.match(stdout, /https:\/\/api\.example\.com/);
+    assert.match(stdout, /API_TOKEN/);
+    assert.match(stdout, /\*\*\*\*/, "secured value should be masked");
+  });
+
+  test("--env-name resolves the UUID via the environments list", async () => {
+    stubEnvironments([
+      environmentFixture({ uuid: "{prod-uuid}", name: "Production" }),
+      environmentFixture({ uuid: "{stage-uuid}", name: "Staging" }),
+    ]);
+    stubVariables("{stage-uuid}", [variableFixture({ key: "DEBUG", value: "true" })]);
+
+    const { code, stdout } = await sandbox.runCli(["env", "variables", "--env-name", "Staging"]);
+
+    assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
+    assert.match(stdout, /DEBUG/);
+    assert.match(stdout, /true/);
+  });
+});

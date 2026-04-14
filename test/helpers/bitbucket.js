@@ -6,7 +6,8 @@ export async function startFakeBitbucket() {
 
   const server = createServer((req, res) => {
     calls.push({ method: req.method, url: req.url, headers: req.headers });
-    const pathname = req.url.split("?")[0];
+    const rawPathname = req.url.split("?")[0];
+    const pathname = decodeURIComponent(rawPathname);
     const key = `${req.method} ${pathname}`;
     const handler = handlers.get(key);
     if (!handler) {

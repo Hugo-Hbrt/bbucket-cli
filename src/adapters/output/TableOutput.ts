@@ -5,6 +5,7 @@ import type {
   Comment,
   Commit,
   Environment,
+  EnvironmentVariable,
   MaskedBbConfig,
   Pipeline,
   Preferences,
@@ -44,6 +45,23 @@ export class TableOutput implements IOutputPort {
 
   pullRequestDiffShown(diff: string): void {
     process.stdout.write(diff);
+  }
+
+  environmentVariablesListed(variables: EnvironmentVariable[]): void {
+    const table = createTable({
+      head: ["Key", "Value", "Secured"],
+      colWidths: [30, 60, 10],
+      wordWrap: true,
+      wrapOnWordBoundary: true,
+    });
+    for (const variable of variables) {
+      table.push([
+        variable.key,
+        variable.secured ? "****" : variable.value,
+        variable.secured ? "yes" : "no",
+      ]);
+    }
+    process.stdout.write(`${table.toString()}\n`);
   }
 
   environmentsListed(environments: Environment[]): void {

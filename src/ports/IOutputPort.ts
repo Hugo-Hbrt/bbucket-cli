@@ -3,6 +3,7 @@ import type {
   Comment,
   Commit,
   Environment,
+  EnvironmentVariable,
   MaskedBbConfig,
   Pipeline,
   Preferences,
@@ -23,4 +24,5 @@ export interface IOutputPort {
   pipelinesListed(pipelines: Pipeline[]): void;
   pipelineShown(pipeline: Pipeline): void;
   environmentsListed(environments: Environment[]): void;
+  environmentVariablesListed(variables: EnvironmentVariable[]): void;
 }
