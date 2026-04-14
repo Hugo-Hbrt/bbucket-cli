@@ -69,6 +69,26 @@ describe("bb pipeline list", () => {
     assert.match(stdout, /42/);
   });
 
+  test("bb pipeline custom <branch> <name> triggers a named custom pipeline", async () => {
+    bitbucket.stub("POST", PIPELINES_ENDPOINT, {
+      body: pipelineFixture({ buildNumber: 55, branch: "main" }),
+    });
+
+    const { code, stdout } = await sandbox.runCli([
+      "pipeline",
+      "custom",
+      "main",
+      "nightly-build",
+    ]);
+
+    assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
+    assert.match(stdout, /55/);
+    const postCall = bitbucket.calls.find((c) => c.method === "POST");
+    assert.ok(postCall);
+    assert.equal(postCall.body.target.selector.type, "custom");
+    assert.equal(postCall.body.target.selector.pattern, "nightly-build");
+  });
+
   test("bb pipeline run <branch> triggers the default pipeline for that branch", async () => {
     bitbucket.stub("POST", PIPELINES_ENDPOINT, {
       body: pipelineFixture({ buildNumber: 123, branch: "main", stateName: "PENDING" }),
