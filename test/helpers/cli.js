@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -11,6 +11,25 @@ const CLI = join(ROOT, "bin", "run.js");
 export async function createSandbox() {
   const home = await mkdtemp(join(tmpdir(), "bb-test-"));
   const configPath = join(home, ".bb-cli-config.json");
+  const fakeGitDir = join(home, "bin");
+  const gitLogPath = join(home, "git-calls.log");
+  let fakeGitInstalled = false;
+
+  async function installFakeGit() {
+    if (fakeGitInstalled) {
+      return;
+    }
+    await mkdir(fakeGitDir, { recursive: true });
+    const script = `#!/usr/bin/env node
+const fs = require('node:fs');
+fs.appendFileSync(${JSON.stringify(gitLogPath)}, process.argv.slice(2).join(' ') + '\\n');
+process.exit(0);
+`;
+    const gitPath = join(fakeGitDir, "git");
+    await writeFile(gitPath, script);
+    await chmod(gitPath, 0o755);
+    fakeGitInstalled = true;
+  }
 
   return {
     async writeConfig(config) {
@@ -19,11 +38,30 @@ export async function createSandbox() {
     async clearConfig() {
       await rm(configPath, { force: true });
     },
+    async useFakeGit() {
+      await installFakeGit();
+      await rm(gitLogPath, { force: true });
+    },
+    async gitCalls() {
+      try {
+        const content = await readFile(gitLogPath, "utf8");
+        return content
+          .trim()
+          .split("\n")
+          .filter((line) => line.length > 0);
+      } catch {
+        return [];
+      }
+    },
     runCli(args, options = {}) {
       return new Promise((resolve, reject) => {
+        const env = { ...process.env, HOME: home, NO_COLOR: "1" };
+        if (fakeGitInstalled) {
+          env.PATH = `${fakeGitDir}:${env.PATH ?? ""}`;
+        }
         const child = spawn("node", [CLI, ...args], {
           cwd: ROOT,
-          env: { ...process.env, HOME: home, NO_COLOR: "1" },
+          env,
         });
         if (options.stdin !== undefined) {
           child.stdin.write(options.stdin);

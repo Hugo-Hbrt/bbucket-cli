@@ -7,6 +7,7 @@ import type {
   PullRequestState,
 } from "../domain/types.js";
 import type { IBitbucketClient } from "../ports/IBitbucketClient.js";
+import type { IGitClient } from "../ports/IGitClient.js";
 import type { IPullRequestPrompter } from "../ports/IPullRequestPrompter.js";
 
 export type CreatePullRequestInput = {
@@ -24,16 +25,21 @@ export type PullRequestFilters = {
 export class PullRequestService {
   private readonly _bitbucket: IBitbucketClient;
   private readonly _prompter: IPullRequestPrompter;
+  private readonly _git: IGitClient;
 
-  constructor(bitbucket: IBitbucketClient, prompter: IPullRequestPrompter) {
+  constructor(bitbucket: IBitbucketClient, prompter: IPullRequestPrompter, git: IGitClient) {
     if (!bitbucket) {
       throw new Error("IBitbucketClient is required");
     }
     if (!prompter) {
       throw new Error("IPullRequestPrompter is required");
     }
+    if (!git) {
+      throw new Error("IGitClient is required");
+    }
     this._bitbucket = bitbucket;
     this._prompter = prompter;
+    this._git = git;
   }
 
   async list(
@@ -56,6 +62,13 @@ export class PullRequestService {
 
   async diff(workspace: string, repoSlug: string, id: number): Promise<string> {
     return this._bitbucket.getPullRequestDiff(workspace, repoSlug, id);
+  }
+
+  async checkout(workspace: string, repoSlug: string, id: number): Promise<string> {
+    const pr = await this._bitbucket.getPullRequest(workspace, repoSlug, id);
+    await this._git.fetch(pr.sourceBranch);
+    await this._git.checkout(pr.sourceBranch);
+    return pr.sourceBranch;
   }
 
   async commits(workspace: string, repoSlug: string, id: number): Promise<Commit[]> {

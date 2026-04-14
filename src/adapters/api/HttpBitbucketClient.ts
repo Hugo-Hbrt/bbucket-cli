@@ -58,9 +58,7 @@ type BitbucketParticipant = {
   state: "approved" | "changes_requested" | null;
 };
 
-type BitbucketPullRequestResponse = {
-  id: number;
-  title: string;
+type BitbucketPullRequestResponse = RawPullRequestSummary & {
   summary?: { raw?: string };
   participants?: BitbucketParticipant[];
   comment_count?: number;
@@ -131,8 +129,7 @@ export class HttpBitbucketClient implements IBitbucketClient {
     const commitsData = (await commitsResponse.json()) as { size?: number };
 
     return {
-      id: data.id,
-      title: data.title,
+      ...mapPullRequestSummary(data),
       description: data.summary?.raw ?? "",
       reviewers: (data.participants ?? [])
         .filter((p) => p.role === "REVIEWER")

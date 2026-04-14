@@ -368,6 +368,29 @@ describe("bb pr commits <id>", () => {
   });
 });
 
+describe("bb pr checkout <id>", () => {
+  test("fetches the source branch and checks it out locally", async () => {
+    await sandbox.useFakeGit();
+    stubPullRequest(
+      77,
+      prDetailFixture({ id: 77, title: "Login PR", sourceBranch: "feature/login" }),
+    );
+
+    const { code } = await sandbox.runCli(["pr", "checkout", "77"]);
+
+    assert.equal(code, 0);
+    const gitCalls = await sandbox.gitCalls();
+    assert.ok(
+      gitCalls.some((c) => c.startsWith("fetch") && c.includes("feature/login")),
+      `expected a git fetch call for feature/login, got: ${gitCalls.join(" | ")}`,
+    );
+    assert.ok(
+      gitCalls.some((c) => c.startsWith("checkout") && c.includes("feature/login")),
+      `expected a git checkout call for feature/login, got: ${gitCalls.join(" | ")}`,
+    );
+  });
+});
+
 describe("bb pr create <src> <dest>", () => {
   test("POSTs a new PR and shows the new PR id", async () => {
     stubCommitsAhead([{ hash: "abc123" }]);

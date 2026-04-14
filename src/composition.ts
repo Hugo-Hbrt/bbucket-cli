@@ -1,6 +1,7 @@
 import { HttpBitbucketClient } from "./adapters/api/HttpBitbucketClient.js";
 import { InquirerConfigPrompter } from "./adapters/config/InquirerConfigPrompter.js";
 import { JsonConfigReader } from "./adapters/config/JsonConfigReader.js";
+import { GitCliClient } from "./adapters/git/GitCliClient.js";
 import { InquirerPullRequestPrompter } from "./adapters/prompt/InquirerPullRequestPrompter.js";
 import type { IConfigReader } from "./ports/IConfigReader.js";
 import type { IConfigWriter } from "./ports/IConfigWriter.js";
@@ -26,13 +27,14 @@ export function compose(): Composition {
   const config = JsonConfigReader.default();
   const prompter = new InquirerConfigPrompter();
   const bitbucket = new HttpBitbucketClient(config);
+  const git = new GitCliClient();
 
   return {
     configReader: config,
     configWriter: config,
     auth: new AuthService(config, config, prompter),
     branches: new BranchService(bitbucket),
-    pullRequests: new PullRequestService(bitbucket, new InquirerPullRequestPrompter()),
+    pullRequests: new PullRequestService(bitbucket, new InquirerPullRequestPrompter(), git),
     pipelines: new PipelineService(bitbucket),
     environments: new EnvService(bitbucket),
     preferences: new PreferencesService(config, config),

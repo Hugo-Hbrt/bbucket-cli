@@ -52,9 +52,7 @@ export type Reviewer = {
   state: ReviewState;
 };
 
-export type PullRequestDetails = {
-  id: number;
-  title: string;
+export type PullRequestDetails = PullRequest & {
   description: string;
   reviewers: Reviewer[];
   commentCount: number;
