@@ -3,7 +3,8 @@ import { Command, Flags, type Interfaces } from "@oclif/core";
 import { JsonOutput } from "../adapters/output/JsonOutput.js";
 import { TableOutput } from "../adapters/output/TableOutput.js";
 import { type Composition, compose } from "../composition.js";
-import { DomainError } from "../domain/errors.js";
+import { BbConfigNotFoundError, DomainError } from "../domain/errors.js";
+import type { BbConfig } from "../domain/types.js";
 import type { IOutputPort } from "../ports/IOutputPort.js";
 
 export type BaseFlags<T extends typeof Command> = Interfaces.InferredFlags<
@@ -49,5 +50,13 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
       this.error(err.userMessage, { exit: 1 });
     }
     return super.catch(err);
+  }
+
+  protected async getConfigOrThrow(): Promise<BbConfig> {
+    const config = await this.composition.configReader.read();
+    if (!config) {
+      throw new BbConfigNotFoundError();
+    }
+    return config;
   }
 }

@@ -3,6 +3,7 @@ export type BbConfig = {
   apiToken: string;
   workspace: string;
   repoSlug: string;
+  apiBaseUrl?: string;
 };
 
 export type MaskedBbConfig = {
@@ -10,4 +11,11 @@ export type MaskedBbConfig = {
   apiToken: string;
   workspace: string;
   repoSlug: string;
+};
+
+export type Branch = {
+  name: string;
+  commitHash: string;
+  author: string;
+  updatedAt: Date;
 };

@@ -11,6 +11,7 @@ type StoredConfig = {
   api_token?: string;
   workspace?: string;
   repo_slug?: string;
+  api_base_url?: string;
 };
 
 export class JsonConfigReader implements IConfigReader, IConfigWriter {
@@ -37,6 +38,7 @@ export class JsonConfigReader implements IConfigReader, IConfigWriter {
         apiToken: parsed.api_token ?? "",
         workspace: parsed.workspace ?? "",
         repoSlug: parsed.repo_slug ?? "",
+        apiBaseUrl: parsed.api_base_url,
       };
     } catch (err) {
       if ((err as NodeJS.ErrnoException)?.code === "ENOENT") {
@@ -52,6 +54,7 @@ export class JsonConfigReader implements IConfigReader, IConfigWriter {
       api_token: config.apiToken,
       workspace: config.workspace,
       repo_slug: config.repoSlug,
+      api_base_url: config.apiBaseUrl,
     };
     await writeFile(this._path, `${JSON.stringify(stored, null, 2)}\n`, "utf8");
     await chmod(this._path, 0o600);

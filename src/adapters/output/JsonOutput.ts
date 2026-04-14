@@ -1,4 +1,4 @@
-import type { MaskedBbConfig } from "../../domain/types.js";
+import type { Branch, MaskedBbConfig } from "../../domain/types.js";
 import type { IOutputPort } from "../../ports/IOutputPort.js";
 
 export class JsonOutput implements IOutputPort {
@@ -8,6 +8,10 @@ export class JsonOutput implements IOutputPort {
 
   authShown(config: MaskedBbConfig, _location: string): void {
     this.print(config);
+  }
+
+  branchesListed(branches: Branch[]): void {
+    this.print(branches);
   }
 
   private print(data: unknown): void {
