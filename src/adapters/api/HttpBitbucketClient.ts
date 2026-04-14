@@ -2,6 +2,7 @@ import type {
   Branch,
   Comment,
   Commit,
+  Environment,
   Pipeline,
   PipelineResult,
   PipelineState,
@@ -206,6 +207,22 @@ export class HttpBitbucketClient implements IBitbucketClient {
     const data = (await response.json()) as { values?: RawPipeline[] };
     const first = data.values?.[0];
     return first ? mapPipeline(first) : null;
+  }
+
+  async listEnvironments(workspace: string, repoSlug: string): Promise<Environment[]> {
+    type RawEnvironment = {
+      uuid: string;
+      name: string;
+      environment_type?: { name?: string };
+    };
+    const raw = await this.fetchAllPages<RawEnvironment>(
+      `/2.0/repositories/${workspace}/${repoSlug}/environments?pagelen=100`,
+    );
+    return raw.map((v) => ({
+      uuid: v.uuid,
+      name: v.name,
+      type: v.environment_type?.name ?? "",
+    }));
   }
 
   async getPullRequestDiff(workspace: string, repoSlug: string, id: number): Promise<string> {

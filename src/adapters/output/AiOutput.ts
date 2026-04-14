@@ -2,6 +2,7 @@ import type {
   Branch,
   Comment,
   Commit,
+  Environment,
   MaskedBbConfig,
   Pipeline,
   Preferences,
@@ -81,5 +82,11 @@ export class AiOutput implements IOutputPort {
     }
     parts.push(`duration=${pipeline.durationSeconds}s`);
     process.stdout.write(`${parts.join("\t")}\n`);
+  }
+
+  environmentsListed(environments: Environment[]): void {
+    for (const env of environments) {
+      process.stdout.write(`${env.name}\t${env.uuid}\t${env.type}\n`);
+    }
   }
 }

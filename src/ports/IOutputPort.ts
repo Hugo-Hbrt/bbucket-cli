@@ -2,6 +2,7 @@ import type {
   Branch,
   Comment,
   Commit,
+  Environment,
   MaskedBbConfig,
   Pipeline,
   Preferences,
@@ -21,4 +22,5 @@ export interface IOutputPort {
   commentsListed(comments: Comment[]): void;
   pipelinesListed(pipelines: Pipeline[]): void;
   pipelineShown(pipeline: Pipeline): void;
+  environmentsListed(environments: Environment[]): void;
 }

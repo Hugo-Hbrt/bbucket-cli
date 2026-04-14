@@ -4,6 +4,7 @@ import type {
   Branch,
   Comment,
   Commit,
+  Environment,
   MaskedBbConfig,
   Pipeline,
   Preferences,
@@ -43,6 +44,19 @@ export class TableOutput implements IOutputPort {
 
   pullRequestDiffShown(diff: string): void {
     process.stdout.write(diff);
+  }
+
+  environmentsListed(environments: Environment[]): void {
+    const table = createTable({
+      head: ["Name", "UUID", "Type"],
+      colWidths: [25, 40, 15],
+      wordWrap: true,
+      wrapOnWordBoundary: true,
+    });
+    for (const env of environments) {
+      table.push([env.name, env.uuid, env.type]);
+    }
+    process.stdout.write(`${table.toString()}\n`);
   }
 
   pipelineShown(pipeline: Pipeline): void {

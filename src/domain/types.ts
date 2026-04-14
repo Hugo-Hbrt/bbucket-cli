@@ -72,6 +72,12 @@ export type PipelineState = "pending" | "in_progress" | "completed" | "stopped" 
 
 export type PipelineResult = "successful" | "failed" | "error" | "stopped" | "expired";
 
+export type Environment = {
+  uuid: string;
+  name: string;
+  type: string;
+};
+
 export type Pipeline = {
   buildNumber: number;
   branch: string;
