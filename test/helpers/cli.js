@@ -22,7 +22,11 @@ export async function createSandbox() {
     await mkdir(fakeGitDir, { recursive: true });
     const script = `#!/usr/bin/env node
 const fs = require('node:fs');
-fs.appendFileSync(${JSON.stringify(gitLogPath)}, process.argv.slice(2).join(' ') + '\\n');
+const args = process.argv.slice(2);
+fs.appendFileSync(${JSON.stringify(gitLogPath)}, args.join(' ') + '\\n');
+if (args[0] === 'rev-parse') {
+  process.stdout.write((process.env.BB_FAKE_GIT_BRANCH || 'test-branch') + '\\n');
+}
 process.exit(0);
 `;
     const gitPath = join(fakeGitDir, "git");
@@ -30,6 +34,8 @@ process.exit(0);
     await chmod(gitPath, 0o755);
     fakeGitInstalled = true;
   }
+
+  const browseLogPath = join(home, "browse-calls.log");
 
   return {
     async writeConfig(config) {
@@ -53,9 +59,26 @@ process.exit(0);
         return [];
       }
     },
+    async browseCalls() {
+      try {
+        const content = await readFile(browseLogPath, "utf8");
+        return content
+          .trim()
+          .split("\n")
+          .filter((line) => line.length > 0);
+      } catch {
+        return [];
+      }
+    },
     runCli(args, options = {}) {
       return new Promise((resolve, reject) => {
-        const env = { ...process.env, HOME: home, NO_COLOR: "1", BB_INSTANT_POLL: "1" };
+        const env = {
+          ...process.env,
+          HOME: home,
+          NO_COLOR: "1",
+          BB_INSTANT_POLL: "1",
+          BB_BROWSE_LOG: browseLogPath,
+        };
         if (fakeGitInstalled) {
           env.PATH = `${fakeGitDir}:${env.PATH ?? ""}`;
         }

@@ -73,6 +73,10 @@ export class TableOutput implements IOutputPort {
     process.stdout.write(`Deleted variable ${varUuid}\n`);
   }
 
+  browserOpened(url: string): void {
+    process.stdout.write(`Opened ${url}\n`);
+  }
+
   environmentsListed(environments: Environment[]): void {
     const table = createTable({
       head: ["Name", "UUID", "Type"],

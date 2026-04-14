@@ -1,13 +1,17 @@
 import { HttpBitbucketClient } from "./adapters/api/HttpBitbucketClient.js";
+import { LogBrowserOpener } from "./adapters/browser/LogBrowserOpener.js";
+import { SystemBrowserOpener } from "./adapters/browser/SystemBrowserOpener.js";
 import { InquirerConfigPrompter } from "./adapters/config/InquirerConfigPrompter.js";
 import { JsonConfigReader } from "./adapters/config/JsonConfigReader.js";
 import { GitCliClient } from "./adapters/git/GitCliClient.js";
 import { InquirerConfirmationPrompter } from "./adapters/prompt/InquirerConfirmationPrompter.js";
 import { InquirerPullRequestPrompter } from "./adapters/prompt/InquirerPullRequestPrompter.js";
+import type { IBrowserOpener } from "./ports/IBrowserOpener.js";
 import type { IConfigReader } from "./ports/IConfigReader.js";
 import type { IConfigWriter } from "./ports/IConfigWriter.js";
 import { AuthService } from "./services/AuthService.js";
 import { BranchService } from "./services/BranchService.js";
+import { BrowseService } from "./services/BrowseService.js";
 import { EnvService } from "./services/EnvService.js";
 import { PipelineService } from "./services/PipelineService.js";
 import { PreferencesService } from "./services/PreferencesService.js";
@@ -22,6 +26,7 @@ export type Composition = {
   pipelines: PipelineService;
   environments: EnvService;
   preferences: PreferencesService;
+  browse: BrowseService;
 };
 
 export function compose(): Composition {
@@ -30,6 +35,7 @@ export function compose(): Composition {
   const bitbucket = new HttpBitbucketClient(config);
   const git = new GitCliClient();
   const confirmPrompter = new InquirerConfirmationPrompter();
+  const browser = makeBrowserOpener();
 
   return {
     configReader: config,
@@ -40,7 +46,15 @@ export function compose(): Composition {
     pipelines: new PipelineService(bitbucket, makeSleep()),
     environments: new EnvService(bitbucket, confirmPrompter),
     preferences: new PreferencesService(config, config),
+    browse: new BrowseService(browser, git),
   };
+}
+
+function makeBrowserOpener(): IBrowserOpener {
+  if (process.env.BB_BROWSE_LOG) {
+    return new LogBrowserOpener(process.env.BB_BROWSE_LOG);
+  }
+  return new SystemBrowserOpener();
 }
 
 function makeSleep(): (ms: number) => Promise<void> {

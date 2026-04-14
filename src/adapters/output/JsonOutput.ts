@@ -93,6 +93,10 @@ export class JsonOutput implements IOutputPort {
     this.print({ deleted: varUuid });
   }
 
+  browserOpened(url: string): void {
+    this.print({ opened: url });
+  }
+
   private print(data: unknown): void {
     process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
   }

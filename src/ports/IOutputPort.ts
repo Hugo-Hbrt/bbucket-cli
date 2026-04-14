@@ -32,4 +32,5 @@ export interface IOutputPort {
   environmentVariablesListed(variables: EnvironmentVariable[]): void;
   environmentVariableSaved(variable: EnvironmentVariable): void;
   environmentVariableDeleted(varUuid: string): void;
+  browserOpened(url: string): void;
 }

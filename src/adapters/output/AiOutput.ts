@@ -128,4 +128,8 @@ export class AiOutput implements IOutputPort {
   environmentVariableDeleted(varUuid: string): void {
     process.stdout.write(`deleted=${varUuid}\n`);
   }
+
+  browserOpened(url: string): void {
+    process.stdout.write(`opened=${url}\n`);
+  }
 }

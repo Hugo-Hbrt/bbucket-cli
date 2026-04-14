@@ -13,4 +13,9 @@ export class GitCliClient implements IGitClient {
   async checkout(branch: string): Promise<void> {
     await execFileAsync("git", ["checkout", branch]);
   }
+
+  async currentBranch(): Promise<string> {
+    const { stdout } = await execFileAsync("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
+    return stdout.trim();
+  }
 }
