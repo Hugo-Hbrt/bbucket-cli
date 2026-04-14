@@ -1,5 +1,6 @@
 import type {
   Branch,
+  Comment,
   Commit,
   MaskedBbConfig,
   Preferences,
@@ -39,6 +40,10 @@ export class JsonOutput implements IOutputPort {
 
   commitsListed(commits: Commit[]): void {
     this.print(commits);
+  }
+
+  commentsListed(comments: Comment[]): void {
+    this.print(comments);
   }
 
   private print(data: unknown): void {

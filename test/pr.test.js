@@ -49,6 +49,38 @@ function stubPullRequestCommits(id, commits) {
   });
 }
 
+function stubPullRequestComments(id, comments) {
+  bitbucket.stub("GET", `${PRS_ENDPOINT}/${id}/comments`, {
+    body: { values: comments },
+  });
+}
+
+function commentFixture({
+  id = 1,
+  author = "Alice",
+  content = "Looks good to me",
+  createdOn = "2026-04-14T10:00:00Z",
+  inline = null,
+  resolved = false,
+} = {}) {
+  return {
+    id,
+    user: { display_name: author },
+    content: { raw: content },
+    created_on: createdOn,
+    ...(inline ? { inline } : {}),
+    ...(resolved
+      ? {
+          resolution: {
+            type: "resolved",
+            user: { display_name: "Resolver" },
+            created_on: "2026-04-15T10:00:00Z",
+          },
+        }
+      : {}),
+  };
+}
+
 function commitFixture({
   hash = "abc123def4567890",
   message = "Sample commit message",
@@ -148,7 +180,134 @@ describe("bb pr list", () => {
   });
 });
 
+describe("bb pr comments <id>", () => {
+  test("follows the next link to fetch all comments across pages", async () => {
+    bitbucket.stub("GET", `${PRS_ENDPOINT}/77/comments`, {
+      body: {
+        values: [commentFixture({ id: 1, content: "first" })],
+        next: `${bitbucket.url}${PRS_ENDPOINT}/77/comments-page-2`,
+      },
+    });
+    bitbucket.stub("GET", `${PRS_ENDPOINT}/77/comments-page-2`, {
+      body: {
+        values: [commentFixture({ id: 2, content: "second" })],
+      },
+    });
+
+    const { stdout } = await sandbox.runCli(["pr", "comments", "77"]);
+
+    assert.match(stdout, /first/);
+    assert.match(stdout, /second/);
+  });
+
+  test("shows the author and content of a single comment", async () => {
+    stubPullRequestComments(42, [
+      commentFixture({ author: "Jane Doe", content: "Please rename this variable" }),
+    ]);
+
+    const { code, stdout } = await sandbox.runCli(["pr", "comments", "42"]);
+
+    assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
+    assert.match(stdout, /Jane Doe/);
+    assert.match(stdout, /Please rename this variable/);
+  });
+
+  test("truncates very long comment content so the table renders without hanging", {
+    timeout: 10_000,
+  }, async () => {
+    const huge = "lorem ipsum dolor sit amet consectetur ".repeat(2_000);
+    stubPullRequestComments(99, [commentFixture({ author: "Verbose Bot", content: huge })]);
+
+    const { code, stdout } = await sandbox.runCli(["pr", "comments", "99"]);
+
+    assert.equal(code, 0);
+    assert.match(stdout, /Verbose Bot/);
+    assert.ok(
+      stdout.length < 3000,
+      `expected stdout < 3000 chars (truncation), got ${stdout.length}`,
+    );
+  });
+
+  test("--unresolved hides resolved comments", async () => {
+    stubPullRequestComments(33, [
+      commentFixture({ author: "Alice", content: "Open question", resolved: false }),
+      commentFixture({ author: "Bob", content: "Already fixed", resolved: true }),
+    ]);
+
+    const { stdout } = await sandbox.runCli(["pr", "comments", "33", "--unresolved"]);
+
+    assert.match(stdout, /Open question/);
+    assert.doesNotMatch(stdout, /Already fixed/);
+  });
+
+  test("--resolved hides unresolved comments", async () => {
+    stubPullRequestComments(34, [
+      commentFixture({ author: "Alice", content: "Open question", resolved: false }),
+      commentFixture({ author: "Bob", content: "Already fixed", resolved: true }),
+    ]);
+
+    const { stdout } = await sandbox.runCli(["pr", "comments", "34", "--resolved"]);
+
+    assert.doesNotMatch(stdout, /Open question/);
+    assert.match(stdout, /Already fixed/);
+  });
+
+  test("passing both --resolved and --unresolved errors out", async () => {
+    stubPullRequestComments(35, []);
+
+    const { code, stderr } = await sandbox.runCli([
+      "pr",
+      "comments",
+      "35",
+      "--resolved",
+      "--unresolved",
+    ]);
+
+    assert.notEqual(code, 0);
+    assert.match(stderr, /resolved.*unresolved|unresolved.*resolved|exclusive|cannot/i);
+  });
+
+  test("shows file:line for inline comments and nothing extra for general ones", async () => {
+    stubPullRequestComments(13, [
+      commentFixture({
+        author: "Alice",
+        content: "Overall LGTM",
+      }),
+      commentFixture({
+        author: "Bob",
+        content: "Watch out for null here",
+        inline: { path: "src/login.ts", from: null, to: 42 },
+      }),
+    ]);
+
+    const { stdout } = await sandbox.runCli(["pr", "comments", "13"]);
+
+    assert.match(stdout, /Overall LGTM/);
+    assert.match(stdout, /Watch out for null here/);
+    assert.match(stdout, /src\/login\.ts:42/);
+  });
+});
+
 describe("bb pr commits <id>", () => {
+  test("follows the next link to fetch all commits across pages", async () => {
+    bitbucket.stub("GET", `${PRS_ENDPOINT}/55/commits`, {
+      body: {
+        values: [commitFixture({ hash: "aaaa111", message: "first commit" })],
+        next: `${bitbucket.url}${PRS_ENDPOINT}/55/commits-page-2`,
+      },
+    });
+    bitbucket.stub("GET", `${PRS_ENDPOINT}/55/commits-page-2`, {
+      body: {
+        values: [commitFixture({ hash: "bbbb222", message: "second commit" })],
+      },
+    });
+
+    const { stdout } = await sandbox.runCli(["pr", "commits", "55"]);
+
+    assert.match(stdout, /first commit/);
+    assert.match(stdout, /second commit/);
+  });
+
   test("shows the short hash and message of a single commit", async () => {
     stubPullRequestCommits(42, [
       commitFixture({ hash: "abc123def4567890", message: "Add login handler" }),

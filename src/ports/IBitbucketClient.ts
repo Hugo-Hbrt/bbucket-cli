@@ -1,5 +1,6 @@
 import type {
   Branch,
+  Comment,
   Commit,
   PullRequest,
   PullRequestDetails,
@@ -20,4 +21,5 @@ export interface IBitbucketClient {
   getPullRequest(workspace: string, repoSlug: string, id: number): Promise<PullRequestDetails>;
   getPullRequestDiff(workspace: string, repoSlug: string, id: number): Promise<string>;
   listPullRequestCommits(workspace: string, repoSlug: string, id: number): Promise<Commit[]>;
+  listPullRequestComments(workspace: string, repoSlug: string, id: number): Promise<Comment[]>;
 }

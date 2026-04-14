@@ -1,5 +1,6 @@
 import type {
   Branch,
+  Comment,
   Commit,
   PullRequest,
   PullRequestDetails,
@@ -142,23 +143,48 @@ export class HttpBitbucketClient implements IBitbucketClient {
   }
 
   async listPullRequestCommits(workspace: string, repoSlug: string, id: number): Promise<Commit[]> {
-    const response = await this.get(
-      `/2.0/repositories/${workspace}/${repoSlug}/pullrequests/${id}/commits`,
-    );
-    await ensureOk(response);
-    const data = (await response.json()) as {
-      values?: Array<{
-        hash: string;
-        message: string;
-        date: string;
-        author: BitbucketAuthor;
-      }>;
+    type RawCommit = {
+      hash: string;
+      message: string;
+      date: string;
+      author: BitbucketAuthor;
     };
-    return (data.values ?? []).map((v) => ({
+    const raw = await this.fetchAllPages<RawCommit>(
+      `/2.0/repositories/${workspace}/${repoSlug}/pullrequests/${id}/commits?pagelen=100`,
+    );
+    return raw.map((v) => ({
       hash: v.hash,
       message: v.message,
       author: extractAuthorName(v.author),
       date: new Date(v.date),
+    }));
+  }
+
+  async listPullRequestComments(
+    workspace: string,
+    repoSlug: string,
+    id: number,
+  ): Promise<Comment[]> {
+    type RawComment = {
+      id: number;
+      user: { display_name: string };
+      content?: { raw?: string };
+      created_on: string;
+      inline?: { path: string; from?: number | null; to?: number | null };
+      resolution?: unknown;
+    };
+    const raw = await this.fetchAllPages<RawComment>(
+      `/2.0/repositories/${workspace}/${repoSlug}/pullrequests/${id}/comments?pagelen=100`,
+    );
+    return raw.map((v) => ({
+      id: v.id,
+      author: v.user.display_name,
+      content: v.content?.raw ?? "",
+      createdOn: new Date(v.created_on),
+      inline: v.inline
+        ? { path: v.inline.path, line: v.inline.to ?? v.inline.from ?? null }
+        : undefined,
+      resolved: v.resolution !== null && v.resolution !== undefined,
     }));
   }
 
@@ -171,15 +197,35 @@ export class HttpBitbucketClient implements IBitbucketClient {
   }
 
   private async get(path: string): Promise<Response> {
+    return this.fetchUrl(path);
+  }
+
+  private async fetchUrl(urlOrPath: string): Promise<Response> {
     const config = await this._config.read();
     if (!config) {
       throw new Error("Config is required");
     }
     const baseUrl = config.apiBaseUrl ?? DEFAULT_API_BASE_URL;
     const auth = Buffer.from(`${config.email}:${config.apiToken}`).toString("base64");
-    return fetch(`${baseUrl}${path}`, {
+    const url = urlOrPath.startsWith("http") ? urlOrPath : `${baseUrl}${urlOrPath}`;
+    return fetch(url, {
       headers: { Authorization: `Basic ${auth}` },
     });
+  }
+
+  protected async fetchAllPages<TRaw>(initialPath: string): Promise<TRaw[]> {
+    const all: TRaw[] = [];
+    let next: string | undefined = initialPath;
+    while (next) {
+      const response = await this.fetchUrl(next);
+      await ensureOk(response);
+      const data = (await response.json()) as { values?: TRaw[]; next?: string };
+      if (data.values) {
+        all.push(...data.values);
+      }
+      next = data.next;
+    }
+    return all;
   }
 }
 

@@ -2,6 +2,7 @@ import Table from "cli-table3";
 
 import type {
   Branch,
+  Comment,
   Commit,
   MaskedBbConfig,
   Preferences,
@@ -41,6 +42,23 @@ export class TableOutput implements IOutputPort {
 
   pullRequestDiffShown(diff: string): void {
     process.stdout.write(diff);
+  }
+
+  commentsListed(comments: Comment[]): void {
+    const table = createTable({
+      head: ["Author", "Date", "Comment"],
+      colWidths: [20, 12, 80],
+      wordWrap: true,
+      wrapOnWordBoundary: true,
+    });
+    for (const comment of comments) {
+      table.push([
+        comment.author,
+        comment.createdOn.toISOString().slice(0, 10),
+        formatCommentText(comment),
+      ]);
+    }
+    process.stdout.write(`${table.toString()}\n`);
   }
 
   commitsListed(commits: Commit[]): void {
@@ -117,4 +135,25 @@ export class TableOutput implements IOutputPort {
 function firstLine(text: string): string {
   const newlineIndex = text.indexOf("\n");
   return newlineIndex === -1 ? text : text.slice(0, newlineIndex);
+}
+
+const MAX_COMMENT_CELL_CHARS = 1000;
+
+function formatCommentText(comment: Comment): string {
+  const body = truncate(comment.content, MAX_COMMENT_CELL_CHARS);
+  if (!comment.inline) {
+    return body;
+  }
+  const location =
+    comment.inline.line !== null
+      ? `${comment.inline.path}:${comment.inline.line}`
+      : comment.inline.path;
+  return `[${location}] ${body}`;
+}
+
+function truncate(text: string, max: number): string {
+  if (text.length <= max) {
+    return text;
+  }
+  return `${text.slice(0, max)}…`;
 }

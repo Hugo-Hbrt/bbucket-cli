@@ -1,5 +1,6 @@
 import type {
   Branch,
+  Comment,
   Commit,
   MaskedBbConfig,
   Preferences,
@@ -16,4 +17,5 @@ export interface IOutputPort {
   pullRequestShown(pr: PullRequestDetails): void;
   pullRequestDiffShown(diff: string): void;
   commitsListed(commits: Commit[]): void;
+  commentsListed(comments: Comment[]): void;
 }

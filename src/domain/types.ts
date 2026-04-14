@@ -67,3 +67,17 @@ export type Commit = {
   author: string;
   date: Date;
 };
+
+export type CommentInline = {
+  path: string;
+  line: number | null;
+};
+
+export type Comment = {
+  id: number;
+  author: string;
+  content: string;
+  createdOn: Date;
+  inline?: CommentInline;
+  resolved: boolean;
+};

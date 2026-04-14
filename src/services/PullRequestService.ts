@@ -1,4 +1,10 @@
-import type { Commit, PullRequest, PullRequestDetails, PullRequestState } from "../domain/types.js";
+import type {
+  Comment,
+  Commit,
+  PullRequest,
+  PullRequestDetails,
+  PullRequestState,
+} from "../domain/types.js";
 import type { IBitbucketClient } from "../ports/IBitbucketClient.js";
 
 export type PullRequestFilters = {
@@ -41,4 +47,29 @@ export class PullRequestService {
   async commits(workspace: string, repoSlug: string, id: number): Promise<Commit[]> {
     return this._bitbucket.listPullRequestCommits(workspace, repoSlug, id);
   }
+
+  async comments(
+    workspace: string,
+    repoSlug: string,
+    id: number,
+    filters: CommentFilters = {},
+  ): Promise<Comment[]> {
+    const all = await this._bitbucket.listPullRequestComments(workspace, repoSlug, id);
+    return all.filter((c) => matchesCommentFilters(c, filters));
+  }
+}
+
+export type CommentFilters = {
+  unresolved?: boolean;
+  resolved?: boolean;
+};
+
+function matchesCommentFilters(comment: Comment, filters: CommentFilters): boolean {
+  if (filters.unresolved === true && comment.resolved === true) {
+    return false;
+  }
+  if (filters.resolved === true && comment.resolved === false) {
+    return false;
+  }
+  return true;
 }

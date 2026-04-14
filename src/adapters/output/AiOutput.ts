@@ -1,5 +1,6 @@
 import type {
   Branch,
+  Comment,
   Commit,
   MaskedBbConfig,
   Preferences,
@@ -51,6 +52,13 @@ export class AiOutput implements IOutputPort {
     process.stdout.write(`id=${pr.id}\ttitle=${pr.title}\n`);
     if (pr.description.length > 0) {
       process.stdout.write(`description=${pr.description}\n`);
+    }
+  }
+
+  commentsListed(comments: Comment[]): void {
+    for (const comment of comments) {
+      const date = comment.createdOn.toISOString().slice(0, 10);
+      process.stdout.write(`${date}\t${comment.author}\t${comment.content}\n`);
     }
   }
 }
