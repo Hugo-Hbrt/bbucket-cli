@@ -45,6 +45,18 @@ export class TableOutput implements IOutputPort {
     process.stdout.write(diff);
   }
 
+  pipelineShown(pipeline: Pipeline): void {
+    process.stdout.write(`Pipeline #${pipeline.buildNumber}\n`);
+    process.stdout.write(`Branch:   ${pipeline.branch}\n`);
+    process.stdout.write(`Trigger:  ${pipeline.trigger}\n`);
+    process.stdout.write(`State:    ${pipeline.state}\n`);
+    if (pipeline.result) {
+      process.stdout.write(`Result:   ${pipeline.result}\n`);
+    }
+    process.stdout.write(`Created:  ${pipeline.createdOn.toISOString().slice(0, 10)}\n`);
+    process.stdout.write(`Duration: ${formatDuration(pipeline.durationSeconds)}\n`);
+  }
+
   pipelinesListed(pipelines: Pipeline[]): void {
     const table = createTable({
       head: ["#", "Branch", "Trigger", "State", "Result", "Created", "Duration"],

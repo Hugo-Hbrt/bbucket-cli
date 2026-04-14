@@ -192,28 +192,20 @@ export class HttpBitbucketClient implements IBitbucketClient {
   }
 
   async listPipelines(workspace: string, repoSlug: string): Promise<Pipeline[]> {
-    type RawPipeline = {
-      build_number: number;
-      target?: { ref_name?: string };
-      trigger?: { type?: string };
-      state?: { name?: string; result?: { name?: string } };
-      created_on: string;
-      build_seconds_used?: number;
-    };
     const raw = await this.fetchAllPages<RawPipeline>(
       `/2.0/repositories/${workspace}/${repoSlug}/pipelines?pagelen=100`,
     );
-    return raw.map((v) => ({
-      buildNumber: v.build_number,
-      branch: v.target?.ref_name ?? "",
-      trigger: stripTriggerPrefix(v.trigger?.type),
-      state: (v.state?.name?.toLowerCase() ?? "pending") as PipelineState,
-      result: v.state?.result?.name
-        ? (v.state.result.name.toLowerCase() as PipelineResult)
-        : undefined,
-      createdOn: new Date(v.created_on),
-      durationSeconds: v.build_seconds_used ?? 0,
-    }));
+    return raw.map(mapPipeline);
+  }
+
+  async getLatestPipeline(workspace: string, repoSlug: string): Promise<Pipeline | null> {
+    const response = await this.get(
+      `/2.0/repositories/${workspace}/${repoSlug}/pipelines?sort=-created_on&pagelen=1`,
+    );
+    await ensureOk(response);
+    const data = (await response.json()) as { values?: RawPipeline[] };
+    const first = data.values?.[0];
+    return first ? mapPipeline(first) : null;
   }
 
   async getPullRequestDiff(workspace: string, repoSlug: string, id: number): Promise<string> {
@@ -263,6 +255,29 @@ async function ensureOk(response: Response): Promise<void> {
   }
   const body = await response.text();
   throw new Error(`Bitbucket API ${response.status} ${response.statusText}: ${body}`);
+}
+
+type RawPipeline = {
+  build_number: number;
+  target?: { ref_name?: string };
+  trigger?: { type?: string };
+  state?: { name?: string; result?: { name?: string } };
+  created_on: string;
+  build_seconds_used?: number;
+};
+
+function mapPipeline(v: RawPipeline): Pipeline {
+  return {
+    buildNumber: v.build_number,
+    branch: v.target?.ref_name ?? "",
+    trigger: stripTriggerPrefix(v.trigger?.type),
+    state: (v.state?.name?.toLowerCase() ?? "pending") as PipelineState,
+    result: v.state?.result?.name
+      ? (v.state.result.name.toLowerCase() as PipelineResult)
+      : undefined,
+    createdOn: new Date(v.created_on),
+    durationSeconds: v.build_seconds_used ?? 0,
+  };
 }
 
 function stripTriggerPrefix(type: string | undefined): string {

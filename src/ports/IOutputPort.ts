@@ -20,4 +20,5 @@ export interface IOutputPort {
   commitsListed(commits: Commit[]): void;
   commentsListed(comments: Comment[]): void;
   pipelinesListed(pipelines: Pipeline[]): void;
+  pipelineShown(pipeline: Pipeline): void;
 }

@@ -51,6 +51,10 @@ export class JsonOutput implements IOutputPort {
     this.print(pipelines);
   }
 
+  pipelineShown(pipeline: Pipeline): void {
+    this.print(pipeline);
+  }
+
   private print(data: unknown): void {
     process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
   }

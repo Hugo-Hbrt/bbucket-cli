@@ -14,4 +14,8 @@ export class PipelineService {
   async list(workspace: string, repoSlug: string): Promise<Pipeline[]> {
     return this._bitbucket.listPipelines(workspace, repoSlug);
   }
+
+  async latest(workspace: string, repoSlug: string): Promise<Pipeline | null> {
+    return this._bitbucket.getLatestPipeline(workspace, repoSlug);
+  }
 }

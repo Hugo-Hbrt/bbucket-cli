@@ -69,6 +69,29 @@ describe("bb pipeline list", () => {
     assert.match(stdout, /42/);
   });
 
+  test("bb pipeline latest shows the most recent pipeline via sort=-created_on", async () => {
+    stubPipelines([
+      pipelineFixture({
+        buildNumber: 99,
+        branch: "main",
+        stateName: "COMPLETED",
+        resultName: "FAILED",
+        buildSeconds: 73,
+      }),
+    ]);
+
+    const { code, stdout } = await sandbox.runCli(["pipeline", "latest"]);
+
+    assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
+    assert.match(stdout, /99/);
+    assert.match(stdout, /main/);
+    assert.match(stdout, /failed/i);
+    assert.ok(
+      bitbucket.calls.some((c) => c.url.includes("sort=-created_on")),
+      `expected a call sorted by -created_on, got: ${bitbucket.calls.map((c) => c.url).join(", ")}`,
+    );
+  });
+
   test("shows branch, trigger, state, result, created date, duration", async () => {
     stubPipelines([
       pipelineFixture({
