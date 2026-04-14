@@ -68,6 +68,20 @@ export type Commit = {
   date: Date;
 };
 
+export type PipelineState = "pending" | "in_progress" | "completed" | "stopped" | "halted";
+
+export type PipelineResult = "successful" | "failed" | "error" | "stopped" | "expired";
+
+export type Pipeline = {
+  buildNumber: number;
+  branch: string;
+  trigger: string;
+  state: PipelineState;
+  result?: PipelineResult;
+  createdOn: Date;
+  durationSeconds: number;
+};
+
 export type CommentInline = {
   path: string;
   line: number | null;

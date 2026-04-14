@@ -3,6 +3,7 @@ import type {
   Comment,
   Commit,
   MaskedBbConfig,
+  Pipeline,
   Preferences,
   PullRequest,
   PullRequestDetails,
@@ -59,6 +60,12 @@ export class AiOutput implements IOutputPort {
     for (const comment of comments) {
       const date = comment.createdOn.toISOString().slice(0, 10);
       process.stdout.write(`${date}\t${comment.author}\t${comment.content}\n`);
+    }
+  }
+
+  pipelinesListed(pipelines: Pipeline[]): void {
+    for (const pipeline of pipelines) {
+      process.stdout.write(`${pipeline.buildNumber}\n`);
     }
   }
 }

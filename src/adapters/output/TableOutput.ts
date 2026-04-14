@@ -5,6 +5,7 @@ import type {
   Comment,
   Commit,
   MaskedBbConfig,
+  Pipeline,
   Preferences,
   PullRequest,
   PullRequestDetails,
@@ -42,6 +43,27 @@ export class TableOutput implements IOutputPort {
 
   pullRequestDiffShown(diff: string): void {
     process.stdout.write(diff);
+  }
+
+  pipelinesListed(pipelines: Pipeline[]): void {
+    const table = createTable({
+      head: ["#", "Branch", "Trigger", "State", "Result", "Created", "Duration"],
+      colWidths: [8, 30, 12, 14, 12, 12, 10],
+      wordWrap: true,
+      wrapOnWordBoundary: true,
+    });
+    for (const pipeline of pipelines) {
+      table.push([
+        String(pipeline.buildNumber),
+        pipeline.branch,
+        pipeline.trigger,
+        pipeline.state,
+        pipeline.result ?? "",
+        pipeline.createdOn.toISOString().slice(0, 10),
+        formatDuration(pipeline.durationSeconds),
+      ]);
+    }
+    process.stdout.write(`${table.toString()}\n`);
   }
 
   commentsListed(comments: Comment[]): void {
@@ -135,6 +157,15 @@ export class TableOutput implements IOutputPort {
 function firstLine(text: string): string {
   const newlineIndex = text.indexOf("\n");
   return newlineIndex === -1 ? text : text.slice(0, newlineIndex);
+}
+
+function formatDuration(seconds: number): string {
+  if (seconds < 60) {
+    return `${seconds}s`;
+  }
+  const minutes = Math.floor(seconds / 60);
+  const remainder = seconds % 60;
+  return `${minutes}m ${remainder}s`;
 }
 
 const MAX_COMMENT_CELL_CHARS = 1000;

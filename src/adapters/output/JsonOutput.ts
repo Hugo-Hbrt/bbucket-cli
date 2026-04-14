@@ -3,6 +3,7 @@ import type {
   Comment,
   Commit,
   MaskedBbConfig,
+  Pipeline,
   Preferences,
   PullRequest,
   PullRequestDetails,
@@ -44,6 +45,10 @@ export class JsonOutput implements IOutputPort {
 
   commentsListed(comments: Comment[]): void {
     this.print(comments);
+  }
+
+  pipelinesListed(pipelines: Pipeline[]): void {
+    this.print(pipelines);
   }
 
   private print(data: unknown): void {

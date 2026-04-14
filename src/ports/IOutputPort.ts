@@ -3,6 +3,7 @@ import type {
   Comment,
   Commit,
   MaskedBbConfig,
+  Pipeline,
   Preferences,
   PullRequest,
   PullRequestDetails,
@@ -18,4 +19,5 @@ export interface IOutputPort {
   pullRequestDiffShown(diff: string): void;
   commitsListed(commits: Commit[]): void;
   commentsListed(comments: Comment[]): void;
+  pipelinesListed(pipelines: Pipeline[]): void;
 }

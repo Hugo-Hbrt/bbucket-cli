@@ -2,6 +2,9 @@ import type {
   Branch,
   Comment,
   Commit,
+  Pipeline,
+  PipelineResult,
+  PipelineState,
   PullRequest,
   PullRequestDetails,
   PullRequestState,
@@ -188,6 +191,31 @@ export class HttpBitbucketClient implements IBitbucketClient {
     }));
   }
 
+  async listPipelines(workspace: string, repoSlug: string): Promise<Pipeline[]> {
+    type RawPipeline = {
+      build_number: number;
+      target?: { ref_name?: string };
+      trigger?: { type?: string };
+      state?: { name?: string; result?: { name?: string } };
+      created_on: string;
+      build_seconds_used?: number;
+    };
+    const raw = await this.fetchAllPages<RawPipeline>(
+      `/2.0/repositories/${workspace}/${repoSlug}/pipelines?pagelen=100`,
+    );
+    return raw.map((v) => ({
+      buildNumber: v.build_number,
+      branch: v.target?.ref_name ?? "",
+      trigger: stripTriggerPrefix(v.trigger?.type),
+      state: (v.state?.name?.toLowerCase() ?? "pending") as PipelineState,
+      result: v.state?.result?.name
+        ? (v.state.result.name.toLowerCase() as PipelineResult)
+        : undefined,
+      createdOn: new Date(v.created_on),
+      durationSeconds: v.build_seconds_used ?? 0,
+    }));
+  }
+
   async getPullRequestDiff(workspace: string, repoSlug: string, id: number): Promise<string> {
     const response = await this.get(
       `/2.0/repositories/${workspace}/${repoSlug}/pullrequests/${id}/diff`,
@@ -235,6 +263,13 @@ async function ensureOk(response: Response): Promise<void> {
   }
   const body = await response.text();
   throw new Error(`Bitbucket API ${response.status} ${response.statusText}: ${body}`);
+}
+
+function stripTriggerPrefix(type: string | undefined): string {
+  if (!type) {
+    return "unknown";
+  }
+  return type.replace(/^pipeline_trigger_/, "").replace(/_/g, " ");
 }
 
 function mapReviewState(state: "approved" | "changes_requested" | null): ReviewState {
