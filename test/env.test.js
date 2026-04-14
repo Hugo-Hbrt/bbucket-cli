@@ -133,6 +133,23 @@ describe("bb env create-variable", () => {
   });
 });
 
+describe("bb env delete-variable", () => {
+  test("DELETEs the variable when --yes is passed", async () => {
+    bitbucket.stub("DELETE", `${VARIABLES_ENDPOINT("{prod-uuid}")}/{var-1}`, { body: {} });
+
+    const { code, stdout } = await sandbox.runCli([
+      "env",
+      "delete-variable",
+      "{prod-uuid}",
+      "{var-1}",
+      "--yes",
+    ]);
+
+    assert.equal(code, 0);
+    assert.match(stdout, /deleted/i);
+  });
+});
+
 describe("bb env update-variable", () => {
   test("PUTs the new value when the variable exists", async () => {
     stubVariables("{prod-uuid}", [
