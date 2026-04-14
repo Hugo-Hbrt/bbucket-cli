@@ -55,7 +55,7 @@ process.exit(0);
     },
     runCli(args, options = {}) {
       return new Promise((resolve, reject) => {
-        const env = { ...process.env, HOME: home, NO_COLOR: "1" };
+        const env = { ...process.env, HOME: home, NO_COLOR: "1", BB_INSTANT_POLL: "1" };
         if (fakeGitInstalled) {
           env.PATH = `${fakeGitDir}:${env.PATH ?? ""}`;
         }

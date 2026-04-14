@@ -69,17 +69,45 @@ describe("bb pipeline list", () => {
     assert.match(stdout, /42/);
   });
 
+  test("bb pipeline wait returns when the pipeline reaches a terminal state", async () => {
+    bitbucket.stub("GET", `${PIPELINES_ENDPOINT}/{abc}`, {
+      body: pipelineFixture({
+        buildNumber: 50,
+        stateName: "COMPLETED",
+        resultName: "SUCCESSFUL",
+      }),
+    });
+
+    const { code, stdout } = await sandbox.runCli(["pipeline", "wait", "{abc}"]);
+
+    assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
+    assert.match(stdout, /50/);
+    assert.match(stdout, /completed/i);
+  });
+
+  test("bb pipeline wait times out if the pipeline never completes", async () => {
+    bitbucket.stub("GET", `${PIPELINES_ENDPOINT}/{stuck}`, {
+      body: pipelineFixture({ buildNumber: 7, stateName: "IN_PROGRESS" }),
+    });
+
+    const { code, stderr } = await sandbox.runCli([
+      "pipeline",
+      "wait",
+      "{stuck}",
+      "--timeout",
+      "1",
+    ]);
+
+    assert.notEqual(code, 0);
+    assert.match(stderr, /did not complete/i);
+  });
+
   test("bb pipeline custom <branch> <name> triggers a named custom pipeline", async () => {
     bitbucket.stub("POST", PIPELINES_ENDPOINT, {
       body: pipelineFixture({ buildNumber: 55, branch: "main" }),
     });
 
-    const { code, stdout } = await sandbox.runCli([
-      "pipeline",
-      "custom",
-      "main",
-      "nightly-build",
-    ]);
+    const { code, stdout } = await sandbox.runCli(["pipeline", "custom", "main", "nightly-build"]);
 
     assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
     assert.match(stdout, /55/);

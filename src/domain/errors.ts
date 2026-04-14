@@ -40,3 +40,13 @@ export class NoCommitsAheadError extends DomainError {
     this.userMessage = `${source} has no commits ahead of ${destination}. Nothing to merge.`;
   }
 }
+
+export class PipelineWaitTimeoutError extends DomainError {
+  readonly userMessage: string;
+
+  constructor(uuid: string, timeoutSeconds: number) {
+    super(`Pipeline ${uuid} did not complete within ${timeoutSeconds}s`);
+    this.name = "PipelineWaitTimeoutError";
+    this.userMessage = `Pipeline ${uuid} did not complete within ${timeoutSeconds}s. Use --timeout to wait longer.`;
+  }
+}

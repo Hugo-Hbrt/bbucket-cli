@@ -84,6 +84,7 @@ export type EnvironmentVariable = {
 };
 
 export type Pipeline = {
+  uuid: string;
   buildNumber: number;
   branch: string;
   trigger: string;

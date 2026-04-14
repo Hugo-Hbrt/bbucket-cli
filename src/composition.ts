@@ -35,8 +35,15 @@ export function compose(): Composition {
     auth: new AuthService(config, config, prompter),
     branches: new BranchService(bitbucket),
     pullRequests: new PullRequestService(bitbucket, new InquirerPullRequestPrompter(), git),
-    pipelines: new PipelineService(bitbucket),
+    pipelines: new PipelineService(bitbucket, makeSleep()),
     environments: new EnvService(bitbucket),
     preferences: new PreferencesService(config, config),
   };
+}
+
+function makeSleep(): (ms: number) => Promise<void> {
+  if (process.env.BB_INSTANT_POLL) {
+    return async () => undefined;
+  }
+  return (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 }

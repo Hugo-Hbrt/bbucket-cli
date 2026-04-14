@@ -213,9 +213,15 @@ export class HttpBitbucketClient implements IBitbucketClient {
         pattern: params.customPipelineName,
       };
     }
-    const response = await this.post(
-      `/2.0/repositories/${workspace}/${repoSlug}/pipelines`,
-      body,
+    const response = await this.post(`/2.0/repositories/${workspace}/${repoSlug}/pipelines`, body);
+    await ensureOk(response);
+    const data = (await response.json()) as RawPipeline;
+    return mapPipeline(data);
+  }
+
+  async getPipeline(workspace: string, repoSlug: string, pipelineUuid: string): Promise<Pipeline> {
+    const response = await this.get(
+      `/2.0/repositories/${workspace}/${repoSlug}/pipelines/${pipelineUuid}`,
     );
     await ensureOk(response);
     const data = (await response.json()) as RawPipeline;
@@ -451,6 +457,7 @@ function mapPullRequestSummary(v: RawPullRequestSummary): PullRequest {
 }
 
 type RawPipeline = {
+  uuid?: string;
   build_number: number;
   target?: { ref_name?: string };
   trigger?: { type?: string };
@@ -461,6 +468,7 @@ type RawPipeline = {
 
 function mapPipeline(v: RawPipeline): Pipeline {
   return {
+    uuid: v.uuid ?? "",
     buildNumber: v.build_number,
     branch: v.target?.ref_name ?? "",
     trigger: stripTriggerPrefix(v.trigger?.type),
