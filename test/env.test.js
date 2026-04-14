@@ -85,6 +85,54 @@ function variableFixture({
   return { uuid, key, value, secured };
 }
 
+describe("bb env create-variable", () => {
+  test("POSTs a new variable when the key does not exist", async () => {
+    stubVariables("{prod-uuid}", []);
+    bitbucket.stub("POST", VARIABLES_ENDPOINT("{prod-uuid}"), {
+      body: { uuid: "{var-1}", key: "API_URL", value: "https://x", secured: false },
+    });
+
+    const { code, stdout } = await sandbox.runCli([
+      "env",
+      "create-variable",
+      "{prod-uuid}",
+      "API_URL",
+      "https://x",
+    ]);
+
+    assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
+    assert.match(stdout, /API_URL/);
+    const postCall = bitbucket.calls.find((c) => c.method === "POST");
+    assert.ok(postCall);
+    assert.equal(postCall.body.key, "API_URL");
+    assert.equal(postCall.body.value, "https://x");
+  });
+
+  test("prompts to override an existing variable and PUTs on confirm", async () => {
+    stubVariables("{prod-uuid}", [
+      {
+        uuid: "{existing-uuid}",
+        key: "API_URL",
+        value: "https://old",
+        secured: false,
+      },
+    ]);
+    bitbucket.stub("PUT", `${VARIABLES_ENDPOINT("{prod-uuid}")}/{existing-uuid}`, {
+      body: { uuid: "{existing-uuid}", key: "API_URL", value: "https://new", secured: false },
+    });
+
+    const { code, stdout } = await sandbox.runCli(
+      ["env", "create-variable", "{prod-uuid}", "API_URL", "https://new"],
+      { stdin: "y\n" },
+    );
+
+    assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
+    const putCall = bitbucket.calls.find((c) => c.method === "PUT");
+    assert.ok(putCall, "expected a PUT to the existing variable");
+    assert.equal(putCall.body.value, "https://new");
+  });
+});
+
 describe("bb env variables <env-uuid>", () => {
   test("lists key, value, and secured status for each variable", async () => {
     stubVariables("{prod-uuid}", [

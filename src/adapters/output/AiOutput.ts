@@ -115,4 +115,13 @@ export class AiOutput implements IOutputPort {
       process.stdout.write(`${variable.key}=${value}\tsecured=${variable.secured}\n`);
     }
   }
+
+  environmentVariableSaved(variable: EnvironmentVariable): void {
+    const value = variable.secured ? "****" : variable.value;
+    process.stdout.write(`saved=${variable.key}\tvalue=${value}\n`);
+  }
+
+  environmentVariableDeleted(varUuid: string): void {
+    process.stdout.write(`deleted=${varUuid}\n`);
+  }
 }

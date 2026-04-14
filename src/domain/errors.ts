@@ -50,3 +50,23 @@ export class PipelineWaitTimeoutError extends DomainError {
     this.userMessage = `Pipeline ${uuid} did not complete within ${timeoutSeconds}s. Use --timeout to wait longer.`;
   }
 }
+
+export class EnvironmentVariableNotFoundError extends DomainError {
+  readonly userMessage: string;
+
+  constructor(key: string) {
+    super(`Variable "${key}" does not exist`);
+    this.name = "EnvironmentVariableNotFoundError";
+    this.userMessage = `Variable "${key}" does not exist in this environment. Use 'bb env create-variable' to create it.`;
+  }
+}
+
+export class OperationCancelledError extends DomainError {
+  readonly userMessage: string;
+
+  constructor() {
+    super("Cancelled");
+    this.name = "OperationCancelledError";
+    this.userMessage = "Cancelled.";
+  }
+}

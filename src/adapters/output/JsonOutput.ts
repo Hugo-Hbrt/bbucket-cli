@@ -81,6 +81,14 @@ export class JsonOutput implements IOutputPort {
     this.print(variables);
   }
 
+  environmentVariableSaved(variable: EnvironmentVariable): void {
+    this.print(variable);
+  }
+
+  environmentVariableDeleted(varUuid: string): void {
+    this.print({ deleted: varUuid });
+  }
+
   private print(data: unknown): void {
     process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
   }

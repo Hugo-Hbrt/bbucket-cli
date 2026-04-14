@@ -260,6 +260,86 @@ export class HttpBitbucketClient implements IBitbucketClient {
     }));
   }
 
+  async createEnvironmentVariable(
+    workspace: string,
+    repoSlug: string,
+    envUuid: string,
+    key: string,
+    value: string,
+    secured: boolean,
+  ): Promise<EnvironmentVariable> {
+    const response = await this.post(
+      `/2.0/repositories/${workspace}/${repoSlug}/deployments_config/environments/${envUuid}/variables`,
+      { key, value, secured },
+    );
+    await ensureOk(response);
+    const data = (await response.json()) as {
+      uuid: string;
+      key: string;
+      value?: string;
+      secured?: boolean;
+    };
+    return {
+      uuid: data.uuid,
+      key: data.key,
+      value: data.value ?? "",
+      secured: data.secured ?? false,
+    };
+  }
+
+  async updateEnvironmentVariable(
+    workspace: string,
+    repoSlug: string,
+    envUuid: string,
+    varUuid: string,
+    key: string,
+    value: string,
+    secured: boolean,
+  ): Promise<EnvironmentVariable> {
+    const config = await this._config.read();
+    if (!config) {
+      throw new Error("Config is required");
+    }
+    const baseUrl = config.apiBaseUrl ?? DEFAULT_API_BASE_URL;
+    const auth = Buffer.from(`${config.email}:${config.apiToken}`).toString("base64");
+    const response = await fetch(
+      `${baseUrl}/2.0/repositories/${workspace}/${repoSlug}/deployments_config/environments/${envUuid}/variables/${varUuid}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Basic ${auth}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ key, value, secured }),
+      },
+    );
+    await ensureOk(response);
+    const data = (await response.json()) as {
+      uuid: string;
+      key: string;
+      value?: string;
+      secured?: boolean;
+    };
+    return {
+      uuid: data.uuid,
+      key: data.key,
+      value: data.value ?? "",
+      secured: data.secured ?? false,
+    };
+  }
+
+  async deleteEnvironmentVariable(
+    workspace: string,
+    repoSlug: string,
+    envUuid: string,
+    varUuid: string,
+  ): Promise<void> {
+    const response = await this.delete(
+      `/2.0/repositories/${workspace}/${repoSlug}/deployments_config/environments/${envUuid}/variables/${varUuid}`,
+    );
+    await ensureOk(response);
+  }
+
   async listEnvironments(workspace: string, repoSlug: string): Promise<Environment[]> {
     type RawEnvironment = {
       uuid: string;

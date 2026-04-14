@@ -64,6 +64,15 @@ export class TableOutput implements IOutputPort {
     process.stdout.write(`${table.toString()}\n`);
   }
 
+  environmentVariableSaved(variable: EnvironmentVariable): void {
+    const value = variable.secured ? "****" : variable.value;
+    process.stdout.write(`Saved ${variable.key}=${value}\n`);
+  }
+
+  environmentVariableDeleted(varUuid: string): void {
+    process.stdout.write(`Deleted variable ${varUuid}\n`);
+  }
+
   environmentsListed(environments: Environment[]): void {
     const table = createTable({
       head: ["Name", "UUID", "Type"],

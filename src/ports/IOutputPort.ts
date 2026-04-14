@@ -29,4 +29,6 @@ export interface IOutputPort {
   pipelineTriggered(pipeline: Pipeline): void;
   environmentsListed(environments: Environment[]): void;
   environmentVariablesListed(variables: EnvironmentVariable[]): void;
+  environmentVariableSaved(variable: EnvironmentVariable): void;
+  environmentVariableDeleted(varUuid: string): void;
 }

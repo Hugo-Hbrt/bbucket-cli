@@ -61,4 +61,27 @@ export interface IBitbucketClient {
     repoSlug: string,
     envUuid: string,
   ): Promise<EnvironmentVariable[]>;
+  createEnvironmentVariable(
+    workspace: string,
+    repoSlug: string,
+    envUuid: string,
+    key: string,
+    value: string,
+    secured: boolean,
+  ): Promise<EnvironmentVariable>;
+  updateEnvironmentVariable(
+    workspace: string,
+    repoSlug: string,
+    envUuid: string,
+    varUuid: string,
+    key: string,
+    value: string,
+    secured: boolean,
+  ): Promise<EnvironmentVariable>;
+  deleteEnvironmentVariable(
+    workspace: string,
+    repoSlug: string,
+    envUuid: string,
+    varUuid: string,
+  ): Promise<void>;
 }
