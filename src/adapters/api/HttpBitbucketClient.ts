@@ -195,6 +195,33 @@ export class HttpBitbucketClient implements IBitbucketClient {
     return raw.map(mapPipeline);
   }
 
+  async triggerPipeline(
+    workspace: string,
+    repoSlug: string,
+    params: { branch: string; customPipelineName?: string },
+  ): Promise<Pipeline> {
+    const body: Record<string, unknown> = {
+      target: {
+        type: "pipeline_ref_target",
+        ref_type: "branch",
+        ref_name: params.branch,
+      },
+    };
+    if (params.customPipelineName) {
+      (body.target as Record<string, unknown>).selector = {
+        type: "custom",
+        pattern: params.customPipelineName,
+      };
+    }
+    const response = await this.post(
+      `/2.0/repositories/${workspace}/${repoSlug}/pipelines`,
+      body,
+    );
+    await ensureOk(response);
+    const data = (await response.json()) as RawPipeline;
+    return mapPipeline(data);
+  }
+
   async getLatestPipeline(workspace: string, repoSlug: string): Promise<Pipeline | null> {
     const response = await this.get(
       `/2.0/repositories/${workspace}/${repoSlug}/pipelines?sort=-created_on&pagelen=1`,

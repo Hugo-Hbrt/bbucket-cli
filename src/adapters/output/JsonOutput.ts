@@ -69,6 +69,10 @@ export class JsonOutput implements IOutputPort {
     this.print(pipeline);
   }
 
+  pipelineTriggered(pipeline: Pipeline): void {
+    this.print(pipeline);
+  }
+
   environmentsListed(environments: Environment[]): void {
     this.print(environments);
   }

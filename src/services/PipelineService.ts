@@ -18,4 +18,20 @@ export class PipelineService {
   async latest(workspace: string, repoSlug: string): Promise<Pipeline | null> {
     return this._bitbucket.getLatestPipeline(workspace, repoSlug);
   }
+
+  async run(workspace: string, repoSlug: string, branch: string): Promise<Pipeline> {
+    return this._bitbucket.triggerPipeline(workspace, repoSlug, { branch });
+  }
+
+  async runCustom(
+    workspace: string,
+    repoSlug: string,
+    branch: string,
+    customPipelineName: string,
+  ): Promise<Pipeline> {
+    return this._bitbucket.triggerPipeline(workspace, repoSlug, {
+      branch,
+      customPipelineName,
+    });
+  }
 }

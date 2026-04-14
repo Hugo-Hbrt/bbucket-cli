@@ -26,6 +26,7 @@ export interface IOutputPort {
   commentsListed(comments: Comment[]): void;
   pipelinesListed(pipelines: Pipeline[]): void;
   pipelineShown(pipeline: Pipeline): void;
+  pipelineTriggered(pipeline: Pipeline): void;
   environmentsListed(environments: Environment[]): void;
   environmentVariablesListed(variables: EnvironmentVariable[]): void;
 }

@@ -77,6 +77,10 @@ export class TableOutput implements IOutputPort {
     process.stdout.write(`${table.toString()}\n`);
   }
 
+  pipelineTriggered(pipeline: Pipeline): void {
+    process.stdout.write(`Triggered pipeline #${pipeline.buildNumber} on ${pipeline.branch}\n`);
+  }
+
   pipelineShown(pipeline: Pipeline): void {
     process.stdout.write(`Pipeline #${pipeline.buildNumber}\n`);
     process.stdout.write(`Branch:   ${pipeline.branch}\n`);

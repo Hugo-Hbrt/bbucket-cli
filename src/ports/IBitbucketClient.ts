@@ -49,6 +49,11 @@ export interface IBitbucketClient {
   listPullRequestComments(workspace: string, repoSlug: string, id: number): Promise<Comment[]>;
   listPipelines(workspace: string, repoSlug: string): Promise<Pipeline[]>;
   getLatestPipeline(workspace: string, repoSlug: string): Promise<Pipeline | null>;
+  triggerPipeline(
+    workspace: string,
+    repoSlug: string,
+    params: { branch: string; customPipelineName?: string },
+  ): Promise<Pipeline>;
   listEnvironments(workspace: string, repoSlug: string): Promise<Environment[]>;
   listEnvironmentVariables(
     workspace: string,

@@ -85,6 +85,10 @@ export class AiOutput implements IOutputPort {
     }
   }
 
+  pipelineTriggered(pipeline: Pipeline): void {
+    process.stdout.write(`triggered=${pipeline.buildNumber}\tbranch=${pipeline.branch}\n`);
+  }
+
   pipelineShown(pipeline: Pipeline): void {
     const parts = [
       `#${pipeline.buildNumber}`,
