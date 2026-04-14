@@ -12,4 +12,5 @@ export interface IBitbucketClient {
     options?: ListPullRequestsOptions,
   ): Promise<PullRequest[]>;
   getPullRequest(workspace: string, repoSlug: string, id: number): Promise<PullRequestDetails>;
+  getPullRequestDiff(workspace: string, repoSlug: string, id: number): Promise<string>;
 }

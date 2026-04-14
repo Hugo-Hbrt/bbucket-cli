@@ -26,6 +26,10 @@ export class TableOutput implements IOutputPort {
     process.stdout.write(`output-style: ${prefs.outputStyle}\n`);
   }
 
+  pullRequestDiffShown(diff: string): void {
+    process.stdout.write(diff);
+  }
+
   pullRequestShown(pr: PullRequestDetails): void {
     process.stdout.write(`#${pr.id} ${pr.title}\n`);
     if (pr.description.length > 0) {

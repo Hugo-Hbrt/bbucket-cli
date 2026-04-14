@@ -33,4 +33,8 @@ export class PullRequestService {
   async view(workspace: string, repoSlug: string, id: number): Promise<PullRequestDetails> {
     return this._bitbucket.getPullRequest(workspace, repoSlug, id);
   }
+
+  async diff(workspace: string, repoSlug: string, id: number): Promise<string> {
+    return this._bitbucket.getPullRequestDiff(workspace, repoSlug, id);
+  }
 }

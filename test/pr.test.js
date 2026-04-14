@@ -125,6 +125,21 @@ describe("bb pr list", () => {
   });
 });
 
+describe("bb pr diff <id>", () => {
+  test("prints the raw diff from the API pipeable to stdout", async () => {
+    const rawDiff =
+      "diff --git a/foo.txt b/foo.txt\n--- a/foo.txt\n+++ b/foo.txt\n@@ -1 +1 @@\n-old\n+new\n";
+    bitbucket.stub("GET", "/2.0/repositories/my-ws/my-repo/pullrequests/42/diff", {
+      body: rawDiff,
+    });
+
+    const { code, stdout } = await sandbox.runCli(["pr", "diff", "42"]);
+
+    assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
+    assert.equal(stdout, rawDiff);
+  });
+});
+
 describe("bb pr view <id>", () => {
   test("shows the PR's title and description", async () => {
     stubPullRequest(

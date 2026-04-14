@@ -14,8 +14,11 @@ export async function startFakeBitbucket() {
       res.end(JSON.stringify({ type: "error", error: { message: `no stub for ${key}` } }));
       return;
     }
-    res.writeHead(handler.status ?? 200, { "content-type": "application/json" });
-    res.end(JSON.stringify(handler.body ?? {}));
+    const isString = typeof handler.body === "string";
+    const contentType = isString ? "text/plain" : "application/json";
+    const responseBody = isString ? handler.body : JSON.stringify(handler.body ?? {});
+    res.writeHead(handler.status ?? 200, { "content-type": contentType });
+    res.end(responseBody);
   });
 
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));

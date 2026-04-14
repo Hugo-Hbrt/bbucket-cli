@@ -140,6 +140,14 @@ export class HttpBitbucketClient implements IBitbucketClient {
     };
   }
 
+  async getPullRequestDiff(workspace: string, repoSlug: string, id: number): Promise<string> {
+    const response = await this.get(
+      `/2.0/repositories/${workspace}/${repoSlug}/pullrequests/${id}/diff`,
+    );
+    await ensureOk(response);
+    return response.text();
+  }
+
   private async get(path: string): Promise<Response> {
     const config = await this._config.read();
     if (!config) {

@@ -36,6 +36,10 @@ export class AiOutput implements IOutputPort {
     }
   }
 
+  pullRequestDiffShown(diff: string): void {
+    process.stdout.write(diff);
+  }
+
   pullRequestShown(pr: PullRequestDetails): void {
     process.stdout.write(`id=${pr.id}\ttitle=${pr.title}\n`);
     if (pr.description.length > 0) {

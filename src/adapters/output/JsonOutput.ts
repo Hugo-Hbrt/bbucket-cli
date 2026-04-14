@@ -32,6 +32,10 @@ export class JsonOutput implements IOutputPort {
     this.print(pr);
   }
 
+  pullRequestDiffShown(diff: string): void {
+    process.stdout.write(diff);
+  }
+
   private print(data: unknown): void {
     process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
   }
