@@ -1,5 +1,5 @@
-import type { Branch } from "../../domain/types.js";
-import type { IBitbucketClient } from "../../ports/IBitbucketClient.js";
+import type { Branch, PullRequest, PullRequestState } from "../../domain/types.js";
+import type { IBitbucketClient, ListPullRequestsOptions } from "../../ports/IBitbucketClient.js";
 import type { IConfigReader } from "../../ports/IConfigReader.js";
 
 const DEFAULT_API_BASE_URL = "https://api.bitbucket.org";
@@ -17,6 +17,18 @@ type BitbucketBranchesResponse = {
       date: string;
       author: BitbucketAuthor;
     };
+  }>;
+};
+
+type BitbucketPullRequestsResponse = {
+  values: Array<{
+    id: number;
+    title: string;
+    state: string;
+    author: { display_name: string };
+    source: { branch: { name: string } };
+    destination: { branch: { name: string } };
+    created_on: string;
   }>;
 };
 
@@ -44,6 +56,35 @@ export class HttpBitbucketClient implements IBitbucketClient {
       commitHash: v.target.hash,
       author: extractAuthorName(v.target.author),
       updatedAt: new Date(v.target.date),
+    }));
+  }
+
+  async listPullRequests(
+    workspace: string,
+    repoSlug: string,
+    options: ListPullRequestsOptions = {},
+  ): Promise<PullRequest[]> {
+    const params = new URLSearchParams();
+    if (options.state) {
+      params.set("state", options.state.toUpperCase());
+    }
+    const query = params.toString() ? `?${params.toString()}` : "";
+    const response = await this.get(
+      `/2.0/repositories/${workspace}/${repoSlug}/pullrequests${query}`,
+    );
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`Bitbucket API ${response.status} ${response.statusText}: ${body}`);
+    }
+    const data = (await response.json()) as BitbucketPullRequestsResponse;
+    return data.values.map((v) => ({
+      id: v.id,
+      title: v.title,
+      author: v.author.display_name,
+      sourceBranch: v.source.branch.name,
+      destinationBranch: v.destination.branch.name,
+      state: v.state.toLowerCase() as PullRequestState,
+      createdOn: new Date(v.created_on),
     }));
   }
 

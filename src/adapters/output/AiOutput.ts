@@ -1,4 +1,4 @@
-import type { Branch, MaskedBbConfig, Preferences } from "../../domain/types.js";
+import type { Branch, MaskedBbConfig, Preferences, PullRequest } from "../../domain/types.js";
 import type { IOutputPort } from "../../ports/IOutputPort.js";
 
 export class AiOutput implements IOutputPort {
@@ -22,5 +22,11 @@ export class AiOutput implements IOutputPort {
 
   preferencesShown(prefs: Preferences): void {
     process.stdout.write(`output-style=${prefs.outputStyle}\n`);
+  }
+
+  pullRequestsListed(prs: PullRequest[]): void {
+    for (const pr of prs) {
+      process.stdout.write(`${pr.id}\t${pr.title}\n`);
+    }
   }
 }

@@ -6,12 +6,14 @@ import type { IConfigWriter } from "./ports/IConfigWriter.js";
 import { AuthService } from "./services/AuthService.js";
 import { BranchService } from "./services/BranchService.js";
 import { PreferencesService } from "./services/PreferencesService.js";
+import { PullRequestService } from "./services/PullRequestService.js";
 
 export type Composition = {
   configReader: IConfigReader;
   configWriter: IConfigWriter;
   auth: AuthService;
   branches: BranchService;
+  pullRequests: PullRequestService;
   preferences: PreferencesService;
 };
 
@@ -25,6 +27,7 @@ export function compose(): Composition {
     configWriter: config,
     auth: new AuthService(config, config, prompter),
     branches: new BranchService(bitbucket),
+    pullRequests: new PullRequestService(bitbucket),
     preferences: new PreferencesService(config, config),
   };
 }

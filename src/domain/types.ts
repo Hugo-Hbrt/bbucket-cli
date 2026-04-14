@@ -32,3 +32,15 @@ export type Branch = {
   author: string;
   updatedAt: Date;
 };
+
+export type PullRequestState = "open" | "draft" | "queued" | "merged" | "declined" | "superseded";
+
+export type PullRequest = {
+  id: number;
+  title: string;
+  author: string;
+  sourceBranch: string;
+  destinationBranch: string;
+  state: PullRequestState;
+  createdOn: Date;
+};

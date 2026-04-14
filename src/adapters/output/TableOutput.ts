@@ -1,6 +1,6 @@
 import Table from "cli-table3";
 
-import type { Branch, MaskedBbConfig, Preferences } from "../../domain/types.js";
+import type { Branch, MaskedBbConfig, Preferences, PullRequest } from "../../domain/types.js";
 import type { IOutputPort } from "../../ports/IOutputPort.js";
 
 export class TableOutput implements IOutputPort {
@@ -18,6 +18,23 @@ export class TableOutput implements IOutputPort {
 
   preferencesShown(prefs: Preferences): void {
     process.stdout.write(`output-style: ${prefs.outputStyle}\n`);
+  }
+
+  pullRequestsListed(prs: PullRequest[]): void {
+    const table = new Table({
+      head: ["ID", "Title", "Author", "Branches", "State", "Created"],
+    });
+    for (const pr of prs) {
+      table.push([
+        String(pr.id),
+        pr.title,
+        pr.author,
+        `${pr.sourceBranch} → ${pr.destinationBranch}`,
+        pr.state,
+        pr.createdOn.toISOString().slice(0, 10),
+      ]);
+    }
+    process.stdout.write(`${table.toString()}\n`);
   }
 
   branchesListed(branches: Branch[]): void {

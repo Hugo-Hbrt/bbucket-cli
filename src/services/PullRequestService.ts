@@ -1,0 +1,32 @@
+import type { PullRequest, PullRequestState } from "../domain/types.js";
+import type { IBitbucketClient } from "../ports/IBitbucketClient.js";
+
+export type PullRequestFilters = {
+  destinationBranch?: string;
+  state?: PullRequestState;
+};
+
+export class PullRequestService {
+  private readonly _bitbucket: IBitbucketClient;
+
+  constructor(bitbucket: IBitbucketClient) {
+    if (!bitbucket) {
+      throw new Error("IBitbucketClient is required");
+    }
+    this._bitbucket = bitbucket;
+  }
+
+  async list(
+    workspace: string,
+    repoSlug: string,
+    filters: PullRequestFilters = {},
+  ): Promise<PullRequest[]> {
+    const prs = await this._bitbucket.listPullRequests(workspace, repoSlug, {
+      state: filters.state,
+    });
+    if (filters.destinationBranch === undefined) {
+      return prs;
+    }
+    return prs.filter((pr) => pr.destinationBranch === filters.destinationBranch);
+  }
+}

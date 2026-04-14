@@ -1,4 +1,4 @@
-import type { Branch, MaskedBbConfig, Preferences } from "../../domain/types.js";
+import type { Branch, MaskedBbConfig, Preferences, PullRequest } from "../../domain/types.js";
 import type { IOutputPort } from "../../ports/IOutputPort.js";
 
 export class JsonOutput implements IOutputPort {
@@ -16,6 +16,10 @@ export class JsonOutput implements IOutputPort {
 
   preferencesShown(prefs: Preferences): void {
     this.print(prefs);
+  }
+
+  pullRequestsListed(prs: PullRequest[]): void {
+    this.print(prs);
   }
 
   private print(data: unknown): void {
