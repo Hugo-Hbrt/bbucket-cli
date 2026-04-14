@@ -31,11 +31,14 @@ Credentials and workspace/repo context are stored at `~/.bb-cli-config.json`:
   "email": "john.doe@example.com",
   "api_token": "ATB...",
   "workspace": "my-workspace",
-  "repo_slug": "my-repo"
+  "repo_slug": "my-repo",
+  "output_style": "normal"
 }
 ```
 
 > **Note**: The `email` field is the Atlassian account email address (found under *Email aliases* in Bitbucket personal settings), **not** the Bitbucket username. This is required for REST API authentication with tokens.
+
+> **Note**: `output_style` is optional and defaults to `"normal"`. Accepted values are `"normal"` (colored table output), `"json"` (raw JSON), and `"ai"` (minimal, token-efficient plain text). Managed via `bb option`.
 
 ### Commands
 
@@ -84,7 +87,7 @@ Authorization: Basic base64(email:api_token)
 
 | Flag | Description |
 |---|---|
-| `--json` | Output raw JSON instead of formatted table |
+| `--output-style <style>` | Output style for this invocation: `normal` (default), `json`, or `ai`. Overrides the saved default in the config file. |
 | `--no-color` | Disable colored output |
 | `-h, --help` | Show help |
 
@@ -101,6 +104,27 @@ bb auth              # alias for bb auth save
 bb auth save         # Interactive: prompts for email, API token, workspace, repo
 bb auth show         # Print current config (token masked as ****)
 ```
+
+---
+
+### `bb option`
+
+Manage persistent CLI preferences. The saved default applies to every command and can be overridden per invocation with `--output-style`.
+
+```
+bb option --output-style <style>   # Set the default output style (normal|json|ai)
+bb option show                     # Display current preferences
+```
+
+**Styles:**
+
+| Style | Description |
+|---|---|
+| `normal` | Formatted table output with `cli-table3` and `chalk` colors — default |
+| `json` | Raw JSON to stdout, suitable for piping into `jq` |
+| `ai` | Minimal, token-efficient plain text — no box borders, no padding, no color codes. Intended for LLM ingestion or simple scripting (`awk`, `cut`, etc.) |
+
+The value is persisted under `output_style` in `~/.bb-cli-config.json`.
 
 ---
 
@@ -229,8 +253,19 @@ The CLI resolves workspace and repo slug from `~/.bb-cli-config.json` only. If t
 
 ## Output Modes
 
-- **Default**: Formatted, colored table output using `cli-table3` and `chalk`
-- **`--json` flag**: Raw JSON output suitable for piping into `jq` or other tools
+Every command routes its output through a single style, selected via the `--output-style` flag or the saved default. Three styles are supported:
+
+- **`normal`** (default): Formatted, colored table output using `cli-table3` and `chalk`. Designed for human terminal use.
+- **`json`**: Raw JSON to stdout. Suitable for piping into `jq` or any other JSON-aware tool.
+- **`ai`**: Minimal, token-efficient plain text. No box borders, no padding, no color codes — every character carries meaning. Designed to be piped into an LLM or parsed with simple tools like `awk` or `cut`.
+
+### Resolution order
+
+The active style for any command invocation is resolved in this order (first match wins):
+
+1. `--output-style <style>` flag — per-invocation override
+2. `output_style` field in `~/.bb-cli-config.json` — saved default
+3. `normal` — built-in fallback
 
 ---
 

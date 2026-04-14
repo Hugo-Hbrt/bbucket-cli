@@ -1,5 +1,6 @@
 import { Command, Flags, type Interfaces } from "@oclif/core";
 
+import { AiOutput } from "../adapters/output/AiOutput.js";
 import { JsonOutput } from "../adapters/output/JsonOutput.js";
 import { TableOutput } from "../adapters/output/TableOutput.js";
 import { type Composition, compose } from "../composition.js";
@@ -13,9 +14,9 @@ export type BaseFlags<T extends typeof Command> = Interfaces.InferredFlags<
 
 export abstract class BaseCommand<T extends typeof Command> extends Command {
   static override baseFlags = {
-    json: Flags.boolean({
-      description: "Format output as JSON",
-      default: false,
+    "output-style": Flags.string({
+      description: "Output style: normal (default), json, or ai",
+      options: ["normal", "json", "ai"],
     }),
     "no-color": Flags.boolean({
       description: "Disable colored output",
@@ -41,8 +42,18 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
       process.env.NO_COLOR = "1";
     }
 
-    this.output = this.flags.json === true ? new JsonOutput() : new TableOutput();
     this.composition = compose();
+    const style = await this.resolveOutputStyle();
+    this.output = selectOutputAdapter(style);
+  }
+
+  private async resolveOutputStyle(): Promise<string> {
+    const flag = this.flags["output-style"];
+    if (flag) {
+      return flag;
+    }
+    const config = await this.composition.configReader.read();
+    return config?.outputStyle ?? "normal";
   }
 
   public override async catch(err: Error & { exitCode?: number }): Promise<unknown> {
@@ -59,4 +70,14 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
     }
     return config;
   }
+}
+
+function selectOutputAdapter(style: string): IOutputPort {
+  if (style === "json") {
+    return new JsonOutput();
+  }
+  if (style === "ai") {
+    return new AiOutput();
+  }
+  return new TableOutput();
 }

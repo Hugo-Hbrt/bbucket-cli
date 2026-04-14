@@ -10,3 +10,13 @@ export class BbConfigNotFoundError extends DomainError {
     this.name = "BbConfigNotFoundError";
   }
 }
+
+export class InvalidConfigError extends DomainError {
+  readonly userMessage: string;
+
+  constructor(details: string) {
+    super(`Invalid config: ${details}`);
+    this.name = "InvalidConfigError";
+    this.userMessage = `Invalid ~/.bb-cli-config.json: ${details}`;
+  }
+}

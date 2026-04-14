@@ -18,13 +18,23 @@ Save your Bitbucket credentials so the tool can connect to your account. The tok
 
 ---
 
-### 2. JSON Output Mode
+### 2. Output Style Preference
 
-Output the raw data from any command as JSON, for scripting and piping to other tools.
+Every command renders its output through a single, user-controllable style. Three styles are supported, selectable via a global flag or persisted as a saved default.
 
 **User flow:**
-1. User appends `--json` to any command
-2. The result is printed as raw JSON instead of a formatted table, suitable for piping to tools like `jq`
+1. User runs `bb option --output-style ai` to set a saved default
+2. All subsequent commands emit output in that style — for example, `bb branch list` renders a minimal, token-efficient plain-text view instead of a bordered table
+3. User can override the saved default for a single invocation with `bb branch list --output-style normal`
+4. User can inspect the current default at any time with `bb option show`
+5. User can switch back with `bb option --output-style normal`
+
+**Styles:**
+- `normal` (default): formatted, colored table output using `cli-table3` and `chalk` — intended for human terminal use
+- `json`: raw JSON to stdout, suitable for piping into `jq` or other tools
+- `ai`: minimal characters, no box-drawing, no padding, no color codes — optimised for LLM ingestion or simple scripting (`awk`, `cut`, etc.)
+
+**Precedence:** the `--output-style` flag always wins over the saved default, which wins over the built-in `normal` fallback.
 
 ---
 

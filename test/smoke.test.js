@@ -89,9 +89,9 @@ describe("bb CLI smoke tests", () => {
     assert.doesNotMatch(stdout, /super-secret-token-do-not-leak/);
   });
 
-  test("bb auth show --json prints masked JSON with camelCase keys", async () => {
+  test("bb auth show --output-style json prints masked JSON with camelCase keys", async () => {
     await writeFakeConfig();
-    const { code, stdout } = await runCli(["auth", "show", "--json"]);
+    const { code, stdout } = await runCli(["auth", "show", "--output-style", "json"]);
     assert.equal(code, 0);
     const parsed = JSON.parse(stdout);
     assert.deepEqual(parsed, {

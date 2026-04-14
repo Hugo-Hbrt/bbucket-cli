@@ -6,17 +6,18 @@ import { createSandbox } from "./helpers/cli.js";
 
 let sandbox;
 let bitbucket;
+let baseConfig;
 
 before(async () => {
   sandbox = await createSandbox();
   bitbucket = await startFakeBitbucket();
-  await sandbox.writeConfig({
+  baseConfig = {
     email: "test@example.com",
     api_token: "test-token",
     workspace: "my-ws",
     repo_slug: "my-repo",
     api_base_url: bitbucket.url,
-  });
+  };
 });
 
 after(async () => {
@@ -24,8 +25,9 @@ after(async () => {
   await sandbox.destroy();
 });
 
-beforeEach(() => {
+beforeEach(async () => {
   bitbucket.reset();
+  await sandbox.writeConfig(baseConfig);
 });
 
 const BRANCHES_ENDPOINT = "/2.0/repositories/my-ws/my-repo/refs/branches";
@@ -101,7 +103,7 @@ describe("bb branch list", () => {
     assert.match(stdout, /CI Bot/);
   });
 
-  test("--json returns branch objects with name, commitHash, author, updatedAt", async () => {
+  test("--output-style json returns branch objects with name, commitHash, author, updatedAt", async () => {
     stubBranches([
       branchFixture({
         name: "feature",
@@ -111,7 +113,7 @@ describe("bb branch list", () => {
       }),
     ]);
 
-    const { code, stdout } = await sandbox.runCli(["branch", "list", "--json"]);
+    const { code, stdout } = await sandbox.runCli(["branch", "list", "--output-style", "json"]);
     const parsed = JSON.parse(stdout);
 
     assert.equal(code, 0);
@@ -155,5 +157,50 @@ describe("bb branch user <filter>", () => {
     assert.match(stdout, /alice-branch/);
     assert.match(stdout, /alice-other/);
     assert.doesNotMatch(stdout, /bob-branch/);
+  });
+});
+
+describe("saved output_style applies to every command", () => {
+  test("bb branch list with config output_style=json emits JSON without a flag", async () => {
+    await sandbox.writeConfig({ ...baseConfig, output_style: "json" });
+    stubBranches([branchFixture({ name: "main" })]);
+
+    const { code, stdout } = await sandbox.runCli(["branch", "list"]);
+    const parsed = JSON.parse(stdout);
+
+    assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
+    assert.equal(parsed[0].name, "main");
+  });
+
+  test("--output-style flag overrides the saved config value", async () => {
+    await sandbox.writeConfig({ ...baseConfig, output_style: "json" });
+    stubBranches([branchFixture({ name: "main" })]);
+
+    const { code, stdout } = await sandbox.runCli(["branch", "list", "--output-style", "normal"]);
+
+    assert.equal(code, 0);
+    assert.throws(() => JSON.parse(stdout), "output should not be valid JSON");
+    assert.match(stdout, /main/);
+  });
+
+  test("ai style produces minimal plain text with no box borders", async () => {
+    stubBranches([
+      branchFixture({
+        name: "feature",
+        hash: "abc1234567890",
+        date: "2026-03-20T15:30:00Z",
+        author: "Jane Doe",
+      }),
+    ]);
+
+    const { code, stdout } = await sandbox.runCli(["branch", "list", "--output-style", "ai"]);
+
+    assert.equal(code, 0);
+    assert.match(stdout, /feature/);
+    assert.match(stdout, /abc1234/);
+    assert.match(stdout, /Jane Doe/);
+    assert.doesNotMatch(stdout, /[┌┐└┘│─┼┬┴├┤]/, "box-drawing characters should not appear");
+    const esc = String.fromCharCode(27);
+    assert.ok(stdout.includes(`${esc}[`) === false, "ANSI escape sequences should not appear");
   });
 });

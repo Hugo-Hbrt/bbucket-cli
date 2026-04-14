@@ -1,6 +1,6 @@
 import Table from "cli-table3";
 
-import type { Branch, MaskedBbConfig } from "../../domain/types.js";
+import type { Branch, MaskedBbConfig, Preferences } from "../../domain/types.js";
 import type { IOutputPort } from "../../ports/IOutputPort.js";
 
 export class TableOutput implements IOutputPort {
@@ -14,6 +14,10 @@ export class TableOutput implements IOutputPort {
     process.stdout.write(`Token:       ${config.apiToken}\n`);
     process.stdout.write(`Workspace:   ${config.workspace}\n`);
     process.stdout.write(`Repo slug:   ${config.repoSlug}\n`);
+  }
+
+  preferencesShown(prefs: Preferences): void {
+    process.stdout.write(`output-style: ${prefs.outputStyle}\n`);
   }
 
   branchesListed(branches: Branch[]): void {
