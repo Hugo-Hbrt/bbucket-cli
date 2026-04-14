@@ -1,4 +1,4 @@
-import type { PullRequest, PullRequestState } from "../domain/types.js";
+import type { PullRequest, PullRequestDetails, PullRequestState } from "../domain/types.js";
 import type { IBitbucketClient } from "../ports/IBitbucketClient.js";
 
 export type PullRequestFilters = {
@@ -28,5 +28,9 @@ export class PullRequestService {
       return prs;
     }
     return prs.filter((pr) => pr.destinationBranch === filters.destinationBranch);
+  }
+
+  async view(workspace: string, repoSlug: string, id: number): Promise<PullRequestDetails> {
+    return this._bitbucket.getPullRequest(workspace, repoSlug, id);
   }
 }

@@ -44,3 +44,19 @@ export type PullRequest = {
   state: PullRequestState;
   createdOn: Date;
 };
+
+export type ReviewState = "approved" | "changes_requested" | "pending";
+
+export type Reviewer = {
+  name: string;
+  state: ReviewState;
+};
+
+export type PullRequestDetails = {
+  id: number;
+  title: string;
+  description: string;
+  reviewers: Reviewer[];
+  commentCount: number;
+  commitCount: number;
+};

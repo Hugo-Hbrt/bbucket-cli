@@ -1,4 +1,4 @@
-import type { Branch, PullRequest, PullRequestState } from "../domain/types.js";
+import type { Branch, PullRequest, PullRequestDetails, PullRequestState } from "../domain/types.js";
 
 export type ListPullRequestsOptions = {
   state?: PullRequestState;
@@ -11,4 +11,5 @@ export interface IBitbucketClient {
     repoSlug: string,
     options?: ListPullRequestsOptions,
   ): Promise<PullRequest[]>;
+  getPullRequest(workspace: string, repoSlug: string, id: number): Promise<PullRequestDetails>;
 }

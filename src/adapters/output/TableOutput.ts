@@ -1,6 +1,12 @@
 import Table from "cli-table3";
 
-import type { Branch, MaskedBbConfig, Preferences, PullRequest } from "../../domain/types.js";
+import type {
+  Branch,
+  MaskedBbConfig,
+  Preferences,
+  PullRequest,
+  PullRequestDetails,
+} from "../../domain/types.js";
 import type { IOutputPort } from "../../ports/IOutputPort.js";
 
 export class TableOutput implements IOutputPort {
@@ -18,6 +24,20 @@ export class TableOutput implements IOutputPort {
 
   preferencesShown(prefs: Preferences): void {
     process.stdout.write(`output-style: ${prefs.outputStyle}\n`);
+  }
+
+  pullRequestShown(pr: PullRequestDetails): void {
+    process.stdout.write(`#${pr.id} ${pr.title}\n`);
+    if (pr.description.length > 0) {
+      process.stdout.write(`\n${pr.description}\n`);
+    }
+    if (pr.reviewers.length > 0) {
+      process.stdout.write("\nReviewers:\n");
+      for (const reviewer of pr.reviewers) {
+        process.stdout.write(`  ${reviewer.name}: ${reviewer.state}\n`);
+      }
+    }
+    process.stdout.write(`\nCommits: ${pr.commitCount}   Comments: ${pr.commentCount}\n`);
   }
 
   pullRequestsListed(prs: PullRequest[]): void {

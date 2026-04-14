@@ -1,4 +1,10 @@
-import type { Branch, PullRequest, PullRequestState } from "../../domain/types.js";
+import type {
+  Branch,
+  PullRequest,
+  PullRequestDetails,
+  PullRequestState,
+  ReviewState,
+} from "../../domain/types.js";
 import type { IBitbucketClient, ListPullRequestsOptions } from "../../ports/IBitbucketClient.js";
 import type { IConfigReader } from "../../ports/IConfigReader.js";
 
@@ -30,6 +36,21 @@ type BitbucketPullRequestsResponse = {
     destination: { branch: { name: string } };
     created_on: string;
   }>;
+};
+
+type BitbucketParticipant = {
+  user: { display_name: string };
+  role: "REVIEWER" | "PARTICIPANT";
+  approved: boolean;
+  state: "approved" | "changes_requested" | null;
+};
+
+type BitbucketPullRequestResponse = {
+  id: number;
+  title: string;
+  summary?: { raw?: string };
+  participants?: BitbucketParticipant[];
+  comment_count?: number;
 };
 
 export class HttpBitbucketClient implements IBitbucketClient {
@@ -88,6 +109,37 @@ export class HttpBitbucketClient implements IBitbucketClient {
     }));
   }
 
+  async getPullRequest(
+    workspace: string,
+    repoSlug: string,
+    id: number,
+  ): Promise<PullRequestDetails> {
+    const base = `/2.0/repositories/${workspace}/${repoSlug}/pullrequests/${id}`;
+    const [detailResponse, commitsResponse] = await Promise.all([
+      this.get(base),
+      this.get(`${base}/commits`),
+    ]);
+    await ensureOk(detailResponse);
+    await ensureOk(commitsResponse);
+
+    const data = (await detailResponse.json()) as BitbucketPullRequestResponse;
+    const commitsData = (await commitsResponse.json()) as { size?: number };
+
+    return {
+      id: data.id,
+      title: data.title,
+      description: data.summary?.raw ?? "",
+      reviewers: (data.participants ?? [])
+        .filter((p) => p.role === "REVIEWER")
+        .map((p) => ({
+          name: p.user.display_name,
+          state: mapReviewState(p.state),
+        })),
+      commentCount: data.comment_count ?? 0,
+      commitCount: commitsData.size ?? 0,
+    };
+  }
+
   private async get(path: string): Promise<Response> {
     const config = await this._config.read();
     if (!config) {
@@ -99,6 +151,24 @@ export class HttpBitbucketClient implements IBitbucketClient {
       headers: { Authorization: `Basic ${auth}` },
     });
   }
+}
+
+async function ensureOk(response: Response): Promise<void> {
+  if (response.ok) {
+    return;
+  }
+  const body = await response.text();
+  throw new Error(`Bitbucket API ${response.status} ${response.statusText}: ${body}`);
+}
+
+function mapReviewState(state: "approved" | "changes_requested" | null): ReviewState {
+  if (state === "approved") {
+    return "approved";
+  }
+  if (state === "changes_requested") {
+    return "changes_requested";
+  }
+  return "pending";
 }
 
 function extractAuthorName(author: BitbucketAuthor): string {
