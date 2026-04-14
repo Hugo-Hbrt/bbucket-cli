@@ -294,6 +294,44 @@ export class HttpBitbucketClient implements IBitbucketClient {
     return mapPullRequestSummary(data);
   }
 
+  async approvePullRequest(workspace: string, repoSlug: string, id: number): Promise<void> {
+    const response = await this.post(
+      `/2.0/repositories/${workspace}/${repoSlug}/pullrequests/${id}/approve`,
+      {},
+    );
+    await ensureOk(response);
+  }
+
+  async unapprovePullRequest(workspace: string, repoSlug: string, id: number): Promise<void> {
+    const response = await this.delete(
+      `/2.0/repositories/${workspace}/${repoSlug}/pullrequests/${id}/approve`,
+    );
+    await ensureOk(response);
+  }
+
+  async requestChangesOnPullRequest(
+    workspace: string,
+    repoSlug: string,
+    id: number,
+  ): Promise<void> {
+    const response = await this.post(
+      `/2.0/repositories/${workspace}/${repoSlug}/pullrequests/${id}/request-changes`,
+      {},
+    );
+    await ensureOk(response);
+  }
+
+  async unrequestChangesOnPullRequest(
+    workspace: string,
+    repoSlug: string,
+    id: number,
+  ): Promise<void> {
+    const response = await this.delete(
+      `/2.0/repositories/${workspace}/${repoSlug}/pullrequests/${id}/request-changes`,
+    );
+    await ensureOk(response);
+  }
+
   async getPullRequestDiff(workspace: string, repoSlug: string, id: number): Promise<string> {
     const response = await this.get(
       `/2.0/repositories/${workspace}/${repoSlug}/pullrequests/${id}/diff`,
@@ -320,6 +358,19 @@ export class HttpBitbucketClient implements IBitbucketClient {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
+    });
+  }
+
+  private async delete(path: string): Promise<Response> {
+    const config = await this._config.read();
+    if (!config) {
+      throw new Error("Config is required");
+    }
+    const baseUrl = config.apiBaseUrl ?? DEFAULT_API_BASE_URL;
+    const auth = Buffer.from(`${config.email}:${config.apiToken}`).toString("base64");
+    return fetch(`${baseUrl}${path}`, {
+      method: "DELETE",
+      headers: { Authorization: `Basic ${auth}` },
     });
   }
 

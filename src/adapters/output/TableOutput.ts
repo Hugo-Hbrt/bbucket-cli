@@ -154,6 +154,10 @@ export class TableOutput implements IOutputPort {
     process.stdout.write(`Checked out ${branch}\n`);
   }
 
+  pullRequestActionApplied(action: string, prId: number): void {
+    process.stdout.write(`${action} PR #${prId}\n`);
+  }
+
   pullRequestShown(pr: PullRequestDetails): void {
     process.stdout.write(`#${pr.id} ${pr.title}\n`);
     if (pr.description.length > 0) {

@@ -68,6 +68,10 @@ export class AiOutput implements IOutputPort {
     process.stdout.write(`checked-out=${branch}\n`);
   }
 
+  pullRequestActionApplied(action: string, prId: number): void {
+    process.stdout.write(`action=${action}\tpr=${prId}\n`);
+  }
+
   commentsListed(comments: Comment[]): void {
     for (const comment of comments) {
       const date = comment.createdOn.toISOString().slice(0, 10);

@@ -71,6 +71,22 @@ export class PullRequestService {
     return pr.sourceBranch;
   }
 
+  async approve(workspace: string, repoSlug: string, id: number): Promise<void> {
+    await this._bitbucket.approvePullRequest(workspace, repoSlug, id);
+  }
+
+  async unapprove(workspace: string, repoSlug: string, id: number): Promise<void> {
+    await this._bitbucket.unapprovePullRequest(workspace, repoSlug, id);
+  }
+
+  async requestChanges(workspace: string, repoSlug: string, id: number): Promise<void> {
+    await this._bitbucket.requestChangesOnPullRequest(workspace, repoSlug, id);
+  }
+
+  async unrequestChanges(workspace: string, repoSlug: string, id: number): Promise<void> {
+    await this._bitbucket.unrequestChangesOnPullRequest(workspace, repoSlug, id);
+  }
+
   async commits(workspace: string, repoSlug: string, id: number): Promise<Commit[]> {
     return this._bitbucket.listPullRequestCommits(workspace, repoSlug, id);
   }

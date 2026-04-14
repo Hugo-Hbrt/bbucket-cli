@@ -20,6 +20,7 @@ export interface IOutputPort {
   pullRequestShown(pr: PullRequestDetails): void;
   pullRequestCreated(pr: PullRequest): void;
   pullRequestCheckedOut(branch: string): void;
+  pullRequestActionApplied(action: string, prId: number): void;
   pullRequestDiffShown(diff: string): void;
   commitsListed(commits: Commit[]): void;
   commentsListed(comments: Comment[]): void;

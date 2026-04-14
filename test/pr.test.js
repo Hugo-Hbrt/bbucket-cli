@@ -368,6 +368,70 @@ describe("bb pr commits <id>", () => {
   });
 });
 
+describe("bb pr approve <id>", () => {
+  test("POSTs to the approve endpoint and confirms", async () => {
+    bitbucket.stub("POST", `${PRS_ENDPOINT}/42/approve`, { body: {} });
+
+    const { code, stdout } = await sandbox.runCli(["pr", "approve", "42"]);
+
+    assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
+    assert.match(stdout, /approved/i);
+    assert.match(stdout, /42/);
+    const postCall = bitbucket.calls.find(
+      (c) => c.method === "POST" && c.url.includes("/42/approve"),
+    );
+    assert.ok(postCall, "expected a POST to /42/approve");
+  });
+});
+
+describe("bb pr no-approve <id>", () => {
+  test("DELETEs the approve endpoint and confirms", async () => {
+    bitbucket.stub("DELETE", `${PRS_ENDPOINT}/42/approve`, { body: {} });
+
+    const { code, stdout } = await sandbox.runCli(["pr", "no-approve", "42"]);
+
+    assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
+    assert.match(stdout, /removed approval/i);
+    assert.match(stdout, /42/);
+    const deleteCall = bitbucket.calls.find(
+      (c) => c.method === "DELETE" && c.url.includes("/42/approve"),
+    );
+    assert.ok(deleteCall, "expected a DELETE to /42/approve");
+  });
+});
+
+describe("bb pr request-changes <id>", () => {
+  test("POSTs to the request-changes endpoint and confirms", async () => {
+    bitbucket.stub("POST", `${PRS_ENDPOINT}/42/request-changes`, { body: {} });
+
+    const { code, stdout } = await sandbox.runCli(["pr", "request-changes", "42"]);
+
+    assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
+    assert.match(stdout, /requested changes/i);
+    assert.match(stdout, /42/);
+    const postCall = bitbucket.calls.find(
+      (c) => c.method === "POST" && c.url.includes("/42/request-changes"),
+    );
+    assert.ok(postCall, "expected a POST to /42/request-changes");
+  });
+});
+
+describe("bb pr no-request-changes <id>", () => {
+  test("DELETEs the request-changes endpoint and confirms", async () => {
+    bitbucket.stub("DELETE", `${PRS_ENDPOINT}/42/request-changes`, { body: {} });
+
+    const { code, stdout } = await sandbox.runCli(["pr", "no-request-changes", "42"]);
+
+    assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
+    assert.match(stdout, /removed.*changes request/i);
+    assert.match(stdout, /42/);
+    const deleteCall = bitbucket.calls.find(
+      (c) => c.method === "DELETE" && c.url.includes("/42/request-changes"),
+    );
+    assert.ok(deleteCall, "expected a DELETE to /42/request-changes");
+  });
+});
+
 describe("bb pr checkout <id>", () => {
   test("fetches the source branch and checks it out locally", async () => {
     await sandbox.useFakeGit();
