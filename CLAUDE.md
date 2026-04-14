@@ -1,162 +1,142 @@
-# HHDev Coding Standards
+# CLAUDE.md — bb CLI Developer Guide
 
-## Core Principles
-
-- Write code that is easy to maintain and build upon — someone else may work on it later
-- Follow these standards before marking any work "complete"
-- PRs with blatant violations should be rejected; minor issues can be noted in comments
-- Follow [Microsoft C# Coding Conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions) as the baseline
+This file is read by Claude Code at the start of every session. It contains everything needed to work on this project consistently.
 
 ---
 
-## Naming Conventions
+## What this project is
 
-| Target | Convention | Example |
-|---|---|---|
-| Public properties | PascalCase | `FirstName` |
-| Private class members | _camelCase | `_firstName` |
-| Function parameters & locals | camelCase | `firstName` |
-| Class names | PascalCase | `UserProfile` |
-| Enum names | ePascalCase, plural | `eColours` |
-| UI control variables | Prefix + PascalCase | `tb_FirstName`, `cmb_Status` |
+`bb` is a Bitbucket Cloud CLI tool written in TypeScript. It lets developers manage branches, pull requests, pipelines, and deployment environments from the terminal via the Bitbucket REST API.
 
-**UI control prefixes:** `tb` (TextBox), `cmb` (ComboBox), `lbl` (Label), `dgv` (DataGridView)
-
-**Project/solution naming:** Always prefix with `HHDev.` — e.g. `HHDev.DataManagement.Client.Core`
+Full product spec: `spec.md`
+Feature list and implementation order: `features.md`
 
 ---
 
-## Code Structure
+## Tech stack
 
-### No Duplication
-Never copy-paste code. If logic appears twice, extract a reusable function. Consider adding generic utilities to `HHDev-Core`.
-
-### Single Responsibility
-Functions should do one thing, named to reflect it clearly. No hard line limit — use judgment, but keep functions small.
-
-### Return Early
-Reduce nesting by returning or throwing as soon as a condition is met:
-
-```csharp
-// ✅ DO
-private string GetResult(string key, string defaultValue)
-{
-    if (key == null) throw new ArgumentException();
-    if (dictionary.ContainsKey(key)) return dictionary[key];
-
-    dictionary.Add(key, defaultValue);
-    return defaultValue;
-}
-
-// ❌ DON'T
-private string GetResult(string key, string defaultValue)
-{
-    string result;
-    if (key != null)
-    {
-        if (dictionary.ContainsKey(key)) { result = dictionary[key]; }
-        else { dictionary.Add(key, defaultValue); result = defaultValue; }
-    }
-    else { throw new ArgumentException(); }
-    return result;
-}
-```
+- **Runtime**: Node.js ≥ 18
+- **Language**: TypeScript
+- **CLI framework**: Oclif
+- **HTTP**: Native `fetch` (Node 18+)
+- **Output**: `chalk` for colors, `cli-table3` for tables
+- **Distribution**: `pkg` binary + npm
 
 ---
 
-## Syntax Rules
+## Architecture
 
-### Always Use Curly Braces
-```csharp
-// ✅ DO
-if (condition)
-{
-    DoSomething();
-}
+Clean Architecture. Dependency arrows point inward only — the core has zero external dependencies.
 
-// ❌ DON'T
-if (condition)
-    DoSomething();
+```
+Commands (Oclif)          ← knows everything, wires the app
+Services (Use Cases)      ← knows domain + ports, no framework or I/O
+Domain                    ← pure types and logic, no imports
+Ports (interfaces)        ← contracts defined by the core, implemented outside
+Adapters                  ← implement ports, own all I/O (HTTP, filesystem, terminal)
 ```
 
-### Boolean Checks — Avoid `!`
-```csharp
-// ✅ DO
-if (a == false) { }
-if (a != b) { }
+### Rules
 
-// ❌ DON'T
-if (!a) { }
-if (!(a == b)) { }
+- **The domain and services import nothing external.** No `fetch`, no `fs`, no Oclif, no chalk. Ever.
+- **Ports are interfaces defined by the core.** `IBitbucketClient`, `IConfigReader`, `IOutputPort`. Services call these interfaces and never know what's behind them.
+- **Adapters implement ports.** `BitbucketApiClient` implements `IBitbucketClient`. `JsonConfigReader` implements `IConfigReader`. `TableOutput` implements `IOutputPort`. All I/O lives here.
+- **Commands are thin wiring.** Instantiate adapters → inject into services → call service → pass result to output adapter. No logic.
+- **Dependency injection via constructors.** Services receive port interfaces at construction time. No service instantiates its own dependencies.
+
+---
+
+## Project structure
+
 ```
-
-### No `this.` Keyword
-Avoid `this.` to access members — the naming convention makes it unnecessary.
-
-### No Optional Parameters
-Use overloads instead:
-```csharp
-// ✅ DO
-void Save(string path) => Save(path, false);
-void Save(string path, bool overwrite) { ... }
-
-// ❌ DON'T
-void Save(string path, bool overwrite = false) { ... }
-```
-
-### Target-Typed `new()` — Limited Use
-Only use when the type is explicit at the declaration site:
-```csharp
-// ✅ OK
-public List<double> MyList { get; set; } = new();
-
-// ❌ DON'T — type is unclear to reader
-DoSomething(instance1, new("test"));
+src/
+  domain/
+    types.ts              # PullRequest, Branch, Pipeline, Environment, etc.
+    errors.ts             # DomainError, ValidationError, NotFoundError, etc.
+  ports/
+    IBitbucketClient.ts   # Interface for all API operations
+    IConfigReader.ts      # Interface for reading config
+    IOutputPort.ts        # Interface for rendering results
+  services/
+    PullRequestService.ts
+    BranchService.ts
+    PipelineService.ts
+    EnvService.ts
+  adapters/
+    api/
+      BitbucketApiClient.ts   # implements IBitbucketClient, owns fetch + auth + pagination
+    config/
+      JsonConfigReader.ts     # implements IConfigReader, reads ~/.bb-cli-config.json
+    output/
+      TableOutput.ts          # implements IOutputPort, uses chalk + cli-table3
+  commands/
+    pr/
+    branch/
+    pipeline/
+    env/
+    browse/
 ```
 
 ---
 
-## Class Design
+## Authentication
 
-### Constructors Should Define Requirements
-```csharp
-// ✅ DO
-class A
-{
-    private int _a;
-    public A(int a) { _a = a; }
-}
-var a = new A(1);
-
-// ❌ DON'T
-class A { public int A { get; set; } }
-var a = new A() { A = 1 };
-```
-
-### Variable Declarations
-Declare class variables/properties at the top of the class (or top of a region if scoped there — though large classes should be broken up).
+- Uses Bitbucket **API tokens** (not app passwords — deprecated June 2026)
+- HTTP Basic Auth: `base64(email:api_token)`
+- The `email` field is the Atlassian account email, not the Bitbucket username
+- All config comes from `~/.bb-cli-config.json` only — no environment variable overrides
+- A 401 response must distinguish between wrong credentials and an expired token
 
 ---
 
-## Project Configuration
+## Key behaviours to preserve
 
-### TreatWarningsAsErrors
-Enable for all new .NET projects.
+- `bb pr create` must abort if the source branch has no commits ahead of destination
+- `bb pr merge` defaults to merge commit strategy; accepts `--strategy merge|squash|fast-forward`
+- `bb pipeline wait` polls every 5 seconds, default timeout 1 hour, exits code 1 on timeout
+- `bb env create-variable` prompts to confirm if the variable already exists
+- `bb env update-variable` warns and aborts if the variable does not exist
+- `bb branch delete` and `bb env delete-variable` always prompt for confirmation unless `--yes` is passed
+- `bb branch list` is sorted by most recently updated first
+- `bb pr list` defaults to open PRs; accepts `--state open|merged|declined|superseded`
+- `bb pr diff` outputs raw diff to stdout — must remain pipeable
 
-### Unused Events (CS0067)
-When an interface forces an unused event, use an empty handler:
-```csharp
-public event EventHandler NeverRaised
-{
-    add { }
-    remove { }
-}
-```
-Or `#pragma warning disable 0067` only when there's a plan to address it later.
+---
 
-### Fody.PropertyChanged
-- Use `[AddINotifyPropertyChangedInterface]` when you don't need the `PropertyChanged` event directly.
-- Add `[SuppressPropertyChangedWarnings]` to `On...Changed()` methods that trigger Fody warnings.
+## Error handling
 
-### VB.NET
-`Option Strict` is **not** used in HH Timing VB.NET code — this codebase is being phased out.
+- All errors are caught globally via Oclif's `catch()` hook — do not add per-command try/catch
+- Empty results exit 0 with a friendly message (e.g. "No open PRs found.")
+- All unexpected errors exit 1
+- Network errors suggest checking connectivity
+- Missing config suggests running `bb auth`
+
+---
+
+## Output
+
+- Default: coloured table via `cli-table3` + `chalk`
+- `--json` flag: raw JSON to stdout, full API response object
+- `--no-color`: disables chalk
+- Do not add TTY detection — out of scope for v1
+
+---
+
+## Implementation order
+
+Follow the phase order in `features.md`:
+1. Authentication
+2. JSON output mode
+3. Read-only commands (branch list, pr list/view/diff/commits/comments, pipeline list/latest, env list/variables)
+4. Write actions (pr create/checkout/review, pipeline run/custom/wait, env create/update)
+5. Destructive actions (pr merge/decline, branch delete, env delete-variable)
+6. Quality of life (browse, shell autocomplete)
+
+---
+
+## Testing approach
+
+- **Domain**: pure unit tests, no mocks needed — just logic and types
+- **Services**: unit tested by injecting mock implementations of port interfaces — no network, no filesystem, no terminal
+- **Adapters**: integration tested in isolation (API client against real or recorded HTTP, config reader against a temp file)
+- **Commands**: minimal — if services and adapters are tested, commands are just wiring

@@ -1,0 +1,54 @@
+{
+  "name": "bb-cli",
+  "version": "0.1.0",
+  "description": "Bitbucket CLI — manage branches, pull requests, pipelines, and environments from the terminal",
+  "author": "Hugo Hebert",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "bb": "./bin/run.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "bin",
+    "dist",
+    "oclif.manifest.json"
+  ],
+  "scripts": {
+    "build": "shx rm -rf dist && tsc -b",
+    "lint": "tsc --noEmit",
+    "check": "biome check --write .",
+    "check:ci": "biome check .",
+    "test": "npm run build && node --test 'test/**/*.test.js'",
+    "prepack": "npm run build && oclif manifest",
+    "postpack": "shx rm -f oclif.manifest.json",
+    "dev": "npm run build && ./bin/run.js"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7.2.0",
+    "@oclif/core": "^4.0.30",
+    "chalk": "^5.3.0",
+    "cli-table3": "^0.6.5"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.11",
+    "@types/node": "^20.11.0",
+    "oclif": "^4.15.0",
+    "shx": "^0.3.4",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "oclif": {
+    "bin": "bb",
+    "dirname": "bb",
+    "commands": "./dist/commands",
+    "topicSeparator": " ",
+    "topics": {
+      "auth": {
+        "description": "Manage Bitbucket authentication credentials"
+      }
+    }
+  }
+}
