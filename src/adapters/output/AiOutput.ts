@@ -1,5 +1,6 @@
 import type {
   Branch,
+  Commit,
   MaskedBbConfig,
   Preferences,
   PullRequest,
@@ -38,6 +39,12 @@ export class AiOutput implements IOutputPort {
 
   pullRequestDiffShown(diff: string): void {
     process.stdout.write(diff);
+  }
+
+  commitsListed(commits: Commit[]): void {
+    for (const commit of commits) {
+      process.stdout.write(`${commit.hash.slice(0, 7)}\t${commit.message}\n`);
+    }
   }
 
   pullRequestShown(pr: PullRequestDetails): void {

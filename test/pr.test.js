@@ -43,6 +43,29 @@ function stubPullRequest(id, body, { commitCount = 0 } = {}) {
   });
 }
 
+function stubPullRequestCommits(id, commits) {
+  bitbucket.stub("GET", `${PRS_ENDPOINT}/${id}/commits`, {
+    body: { size: commits.length, values: commits },
+  });
+}
+
+function commitFixture({
+  hash = "abc123def4567890",
+  message = "Sample commit message",
+  date = "2026-04-14T10:00:00Z",
+  author = "Alice",
+} = {}) {
+  return {
+    hash,
+    message,
+    date,
+    author: {
+      raw: `${author} <${author.toLowerCase()}@example.com>`,
+      user: { display_name: author },
+    },
+  };
+}
+
 function prFixture({
   id = 1,
   title = "Sample PR",
@@ -122,6 +145,61 @@ describe("bb pr list", () => {
       urls.some((u) => u.includes("MERGED")),
       `expected a call with MERGED in the URL, got: ${urls.join(", ")}`,
     );
+  });
+});
+
+describe("bb pr commits <id>", () => {
+  test("shows the short hash and message of a single commit", async () => {
+    stubPullRequestCommits(42, [
+      commitFixture({ hash: "abc123def4567890", message: "Add login handler" }),
+    ]);
+
+    const { code, stdout } = await sandbox.runCli(["pr", "commits", "42"]);
+
+    assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
+    assert.match(stdout, /abc123d/);
+    assert.match(stdout, /Add login handler/);
+    assert.doesNotMatch(stdout, /abc123def4567890/, "full hash should not appear");
+  });
+
+  test("shows author and commit date for each commit", async () => {
+    stubPullRequestCommits(7, [
+      commitFixture({
+        hash: "deadbeef1234",
+        message: "Refactor auth",
+        author: "Jane Doe",
+        date: "2026-03-20T15:30:00Z",
+      }),
+    ]);
+
+    const { stdout } = await sandbox.runCli(["pr", "commits", "7"]);
+
+    assert.match(stdout, /Jane Doe/);
+    assert.match(stdout, /2026-03-20/);
+  });
+
+  test("shows only the first line of multi-line commit messages", async () => {
+    stubPullRequestCommits(8, [
+      commitFixture({
+        message: "Short subject line\n\nLong body paragraph that explains things in detail.",
+      }),
+    ]);
+
+    const { stdout } = await sandbox.runCli(["pr", "commits", "8"]);
+
+    assert.match(stdout, /Short subject line/);
+    assert.doesNotMatch(stdout, /Long body paragraph/, "body should be hidden in the table");
+  });
+
+  test("wraps a single very long commit subject so no row exceeds a sane width", async () => {
+    const longSubject = "Refactor everything ".repeat(20).trim();
+    stubPullRequestCommits(11, [commitFixture({ message: longSubject })]);
+
+    const { stdout } = await sandbox.runCli(["pr", "commits", "11"]);
+
+    const widestLine = Math.max(...stdout.split("\n").map((l) => l.length));
+    assert.ok(widestLine <= 120, `expected every line to be ≤120 chars, widest was ${widestLine}`);
+    assert.match(stdout, /Refactor everything/);
   });
 });
 

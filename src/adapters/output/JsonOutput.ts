@@ -1,5 +1,6 @@
 import type {
   Branch,
+  Commit,
   MaskedBbConfig,
   Preferences,
   PullRequest,
@@ -34,6 +35,10 @@ export class JsonOutput implements IOutputPort {
 
   pullRequestDiffShown(diff: string): void {
     process.stdout.write(diff);
+  }
+
+  commitsListed(commits: Commit[]): void {
+    this.print(commits);
   }
 
   private print(data: unknown): void {

@@ -1,4 +1,4 @@
-import type { PullRequest, PullRequestDetails, PullRequestState } from "../domain/types.js";
+import type { Commit, PullRequest, PullRequestDetails, PullRequestState } from "../domain/types.js";
 import type { IBitbucketClient } from "../ports/IBitbucketClient.js";
 
 export type PullRequestFilters = {
@@ -36,5 +36,9 @@ export class PullRequestService {
 
   async diff(workspace: string, repoSlug: string, id: number): Promise<string> {
     return this._bitbucket.getPullRequestDiff(workspace, repoSlug, id);
+  }
+
+  async commits(workspace: string, repoSlug: string, id: number): Promise<Commit[]> {
+    return this._bitbucket.listPullRequestCommits(workspace, repoSlug, id);
   }
 }

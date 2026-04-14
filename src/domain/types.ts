@@ -60,3 +60,10 @@ export type PullRequestDetails = {
   commentCount: number;
   commitCount: number;
 };
+
+export type Commit = {
+  hash: string;
+  message: string;
+  author: string;
+  date: Date;
+};

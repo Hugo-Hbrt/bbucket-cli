@@ -1,5 +1,6 @@
 import type {
   Branch,
+  Commit,
   PullRequest,
   PullRequestDetails,
   PullRequestState,
@@ -138,6 +139,27 @@ export class HttpBitbucketClient implements IBitbucketClient {
       commentCount: data.comment_count ?? 0,
       commitCount: commitsData.size ?? 0,
     };
+  }
+
+  async listPullRequestCommits(workspace: string, repoSlug: string, id: number): Promise<Commit[]> {
+    const response = await this.get(
+      `/2.0/repositories/${workspace}/${repoSlug}/pullrequests/${id}/commits`,
+    );
+    await ensureOk(response);
+    const data = (await response.json()) as {
+      values?: Array<{
+        hash: string;
+        message: string;
+        date: string;
+        author: BitbucketAuthor;
+      }>;
+    };
+    return (data.values ?? []).map((v) => ({
+      hash: v.hash,
+      message: v.message,
+      author: extractAuthorName(v.author),
+      date: new Date(v.date),
+    }));
   }
 
   async getPullRequestDiff(workspace: string, repoSlug: string, id: number): Promise<string> {
