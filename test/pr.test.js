@@ -368,6 +368,21 @@ describe("bb pr commits <id>", () => {
   });
 });
 
+describe("bb pr decline <id>", () => {
+  test("POSTs to the decline endpoint", async () => {
+    bitbucket.stub("POST", `${PRS_ENDPOINT}/42/decline`, { body: {} });
+
+    const { code, stdout } = await sandbox.runCli(["pr", "decline", "42"]);
+
+    assert.equal(code, 0);
+    assert.match(stdout, /declined/i);
+    const postCall = bitbucket.calls.find(
+      (c) => c.method === "POST" && c.url.includes("/42/decline"),
+    );
+    assert.ok(postCall);
+  });
+});
+
 describe("bb pr merge <id>", () => {
   test("POSTs to the merge endpoint with the default merge_commit strategy", async () => {
     bitbucket.stub("POST", `${PRS_ENDPOINT}/42/merge`, { body: {} });
