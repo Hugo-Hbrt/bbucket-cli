@@ -12,7 +12,11 @@ import type {
   PullRequestState,
   ReviewState,
 } from "../../domain/types.js";
-import type { IBitbucketClient, ListPullRequestsOptions } from "../../ports/IBitbucketClient.js";
+import type {
+  CreatePullRequestParams,
+  IBitbucketClient,
+  ListPullRequestsOptions,
+} from "../../ports/IBitbucketClient.js";
 import type { IConfigReader } from "../../ports/IConfigReader.js";
 
 const DEFAULT_API_BASE_URL = "https://api.bitbucket.org";
@@ -33,16 +37,18 @@ type BitbucketBranchesResponse = {
   }>;
 };
 
+type RawPullRequestSummary = {
+  id: number;
+  title: string;
+  state: string;
+  author: { display_name: string };
+  source: { branch: { name: string } };
+  destination: { branch: { name: string } };
+  created_on: string;
+};
+
 type BitbucketPullRequestsResponse = {
-  values: Array<{
-    id: number;
-    title: string;
-    state: string;
-    author: { display_name: string };
-    source: { branch: { name: string } };
-    destination: { branch: { name: string } };
-    created_on: string;
-  }>;
+  values: RawPullRequestSummary[];
 };
 
 type BitbucketParticipant = {
@@ -105,15 +111,7 @@ export class HttpBitbucketClient implements IBitbucketClient {
       throw new Error(`Bitbucket API ${response.status} ${response.statusText}: ${body}`);
     }
     const data = (await response.json()) as BitbucketPullRequestsResponse;
-    return data.values.map((v) => ({
-      id: v.id,
-      title: v.title,
-      author: v.author.display_name,
-      sourceBranch: v.source.branch.name,
-      destinationBranch: v.destination.branch.name,
-      state: v.state.toLowerCase() as PullRequestState,
-      createdOn: new Date(v.created_on),
-    }));
+    return data.values.map(mapPullRequestSummary);
   }
 
   async getPullRequest(
@@ -248,6 +246,57 @@ export class HttpBitbucketClient implements IBitbucketClient {
     }));
   }
 
+  async getCommitsAhead(
+    workspace: string,
+    repoSlug: string,
+    source: string,
+    destination: string,
+  ): Promise<Commit[]> {
+    const params = new URLSearchParams({
+      include: source,
+      exclude: destination,
+      pagelen: "1",
+    });
+    const response = await this.get(
+      `/2.0/repositories/${workspace}/${repoSlug}/commits?${params.toString()}`,
+    );
+    await ensureOk(response);
+    const data = (await response.json()) as {
+      values?: Array<{
+        hash: string;
+        message?: string;
+        date?: string;
+        author?: BitbucketAuthor;
+      }>;
+    };
+    return (data.values ?? []).map((v) => ({
+      hash: v.hash,
+      message: v.message ?? "",
+      author: extractAuthorName(v.author),
+      date: v.date ? new Date(v.date) : new Date(0),
+    }));
+  }
+
+  async createPullRequest(
+    workspace: string,
+    repoSlug: string,
+    params: CreatePullRequestParams,
+  ): Promise<PullRequest> {
+    const body = {
+      title: params.title,
+      description: params.description ?? "",
+      source: { branch: { name: params.sourceBranch } },
+      destination: { branch: { name: params.destinationBranch } },
+    };
+    const response = await this.post(
+      `/2.0/repositories/${workspace}/${repoSlug}/pullrequests`,
+      body,
+    );
+    await ensureOk(response);
+    const data = (await response.json()) as RawPullRequestSummary;
+    return mapPullRequestSummary(data);
+  }
+
   async getPullRequestDiff(workspace: string, repoSlug: string, id: number): Promise<string> {
     const response = await this.get(
       `/2.0/repositories/${workspace}/${repoSlug}/pullrequests/${id}/diff`,
@@ -258,6 +307,23 @@ export class HttpBitbucketClient implements IBitbucketClient {
 
   private async get(path: string): Promise<Response> {
     return this.fetchUrl(path);
+  }
+
+  private async post(path: string, body: unknown): Promise<Response> {
+    const config = await this._config.read();
+    if (!config) {
+      throw new Error("Config is required");
+    }
+    const baseUrl = config.apiBaseUrl ?? DEFAULT_API_BASE_URL;
+    const auth = Buffer.from(`${config.email}:${config.apiToken}`).toString("base64");
+    return fetch(`${baseUrl}${path}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${auth}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
   }
 
   private async fetchUrl(urlOrPath: string): Promise<Response> {
@@ -295,6 +361,18 @@ async function ensureOk(response: Response): Promise<void> {
   }
   const body = await response.text();
   throw new Error(`Bitbucket API ${response.status} ${response.statusText}: ${body}`);
+}
+
+function mapPullRequestSummary(v: RawPullRequestSummary): PullRequest {
+  return {
+    id: v.id,
+    title: v.title,
+    author: v.author.display_name,
+    sourceBranch: v.source.branch.name,
+    destinationBranch: v.destination.branch.name,
+    state: v.state.toLowerCase() as PullRequestState,
+    createdOn: new Date(v.created_on),
+  };
 }
 
 type RawPipeline = {
@@ -337,7 +415,10 @@ function mapReviewState(state: "approved" | "changes_requested" | null): ReviewS
   return "pending";
 }
 
-function extractAuthorName(author: BitbucketAuthor): string {
+function extractAuthorName(author: BitbucketAuthor | undefined): string {
+  if (!author) {
+    return "Unknown";
+  }
   if (author.user?.display_name) {
     return author.user.display_name;
   }

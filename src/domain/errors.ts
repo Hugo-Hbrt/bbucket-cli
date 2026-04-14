@@ -30,3 +30,13 @@ export class EnvironmentNotFoundError extends DomainError {
     this.userMessage = `No deployment environment named "${name}". Run 'bb env list' to see available environments.`;
   }
 }
+
+export class NoCommitsAheadError extends DomainError {
+  readonly userMessage: string;
+
+  constructor(source: string, destination: string) {
+    super(`${source} has no commits ahead of ${destination}`);
+    this.name = "NoCommitsAheadError";
+    this.userMessage = `${source} has no commits ahead of ${destination}. Nothing to merge.`;
+  }
+}

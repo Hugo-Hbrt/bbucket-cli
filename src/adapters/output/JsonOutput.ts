@@ -37,6 +37,10 @@ export class JsonOutput implements IOutputPort {
     this.print(pr);
   }
 
+  pullRequestCreated(pr: PullRequest): void {
+    this.print(pr);
+  }
+
   pullRequestDiffShown(diff: string): void {
     process.stdout.write(diff);
   }

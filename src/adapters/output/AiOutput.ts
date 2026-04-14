@@ -58,6 +58,12 @@ export class AiOutput implements IOutputPort {
     }
   }
 
+  pullRequestCreated(pr: PullRequest): void {
+    process.stdout.write(
+      `created=${pr.id}\ttitle=${pr.title}\t${pr.sourceBranch}->${pr.destinationBranch}\n`,
+    );
+  }
+
   commentsListed(comments: Comment[]): void {
     for (const comment of comments) {
       const date = comment.createdOn.toISOString().slice(0, 10);

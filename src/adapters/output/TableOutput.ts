@@ -145,6 +145,11 @@ export class TableOutput implements IOutputPort {
     process.stdout.write(`${table.toString()}\n`);
   }
 
+  pullRequestCreated(pr: PullRequest): void {
+    process.stdout.write(`Created PR #${pr.id}: ${pr.title}\n`);
+    process.stdout.write(`${pr.sourceBranch} → ${pr.destinationBranch}\n`);
+  }
+
   pullRequestShown(pr: PullRequestDetails): void {
     process.stdout.write(`#${pr.id} ${pr.title}\n`);
     if (pr.description.length > 0) {

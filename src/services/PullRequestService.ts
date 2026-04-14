@@ -1,3 +1,4 @@
+import { NoCommitsAheadError } from "../domain/errors.js";
 import type {
   Comment,
   Commit,
@@ -6,6 +7,14 @@ import type {
   PullRequestState,
 } from "../domain/types.js";
 import type { IBitbucketClient } from "../ports/IBitbucketClient.js";
+import type { IPullRequestPrompter } from "../ports/IPullRequestPrompter.js";
+
+export type CreatePullRequestInput = {
+  title?: string;
+  description?: string;
+  sourceBranch: string;
+  destinationBranch: string;
+};
 
 export type PullRequestFilters = {
   destinationBranch?: string;
@@ -14,12 +23,17 @@ export type PullRequestFilters = {
 
 export class PullRequestService {
   private readonly _bitbucket: IBitbucketClient;
+  private readonly _prompter: IPullRequestPrompter;
 
-  constructor(bitbucket: IBitbucketClient) {
+  constructor(bitbucket: IBitbucketClient, prompter: IPullRequestPrompter) {
     if (!bitbucket) {
       throw new Error("IBitbucketClient is required");
     }
+    if (!prompter) {
+      throw new Error("IPullRequestPrompter is required");
+    }
     this._bitbucket = bitbucket;
+    this._prompter = prompter;
   }
 
   async list(
@@ -46,6 +60,29 @@ export class PullRequestService {
 
   async commits(workspace: string, repoSlug: string, id: number): Promise<Commit[]> {
     return this._bitbucket.listPullRequestCommits(workspace, repoSlug, id);
+  }
+
+  async create(
+    workspace: string,
+    repoSlug: string,
+    input: CreatePullRequestInput,
+  ): Promise<PullRequest> {
+    const ahead = await this._bitbucket.getCommitsAhead(
+      workspace,
+      repoSlug,
+      input.sourceBranch,
+      input.destinationBranch,
+    );
+    if (ahead.length === 0) {
+      throw new NoCommitsAheadError(input.sourceBranch, input.destinationBranch);
+    }
+    const title = input.title ?? (await this._prompter.promptForTitle());
+    return this._bitbucket.createPullRequest(workspace, repoSlug, {
+      title,
+      description: input.description,
+      sourceBranch: input.sourceBranch,
+      destinationBranch: input.destinationBranch,
+    });
   }
 
   async comments(

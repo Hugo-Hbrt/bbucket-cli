@@ -19,12 +19,16 @@ export async function createSandbox() {
     async clearConfig() {
       await rm(configPath, { force: true });
     },
-    runCli(args) {
+    runCli(args, options = {}) {
       return new Promise((resolve, reject) => {
         const child = spawn("node", [CLI, ...args], {
           cwd: ROOT,
           env: { ...process.env, HOME: home, NO_COLOR: "1" },
         });
+        if (options.stdin !== undefined) {
+          child.stdin.write(options.stdin);
+        }
+        child.stdin.end();
         let stdout = "";
         let stderr = "";
         child.stdout.on("data", (chunk) => {

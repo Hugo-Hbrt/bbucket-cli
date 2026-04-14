@@ -49,6 +49,12 @@ function stubPullRequestCommits(id, commits) {
   });
 }
 
+function stubCommitsAhead(commits) {
+  bitbucket.stub("GET", "/2.0/repositories/my-ws/my-repo/commits", {
+    body: { values: commits },
+  });
+}
+
 function stubPullRequestComments(id, comments) {
   bitbucket.stub("GET", `${PRS_ENDPOINT}/${id}/comments`, {
     body: { values: comments },
@@ -359,6 +365,64 @@ describe("bb pr commits <id>", () => {
     const widestLine = Math.max(...stdout.split("\n").map((l) => l.length));
     assert.ok(widestLine <= 120, `expected every line to be ≤120 chars, widest was ${widestLine}`);
     assert.match(stdout, /Refactor everything/);
+  });
+});
+
+describe("bb pr create <src> <dest>", () => {
+  test("POSTs a new PR and shows the new PR id", async () => {
+    stubCommitsAhead([{ hash: "abc123" }]);
+    bitbucket.stub("POST", PRS_ENDPOINT, {
+      body: prFixture({ id: 999, title: "Add login page" }),
+    });
+
+    const { code, stdout } = await sandbox.runCli([
+      "pr",
+      "create",
+      "feature/login",
+      "main",
+      "--title",
+      "Add login page",
+      "--description",
+      "Implements login form",
+    ]);
+
+    assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
+    assert.match(stdout, /999/);
+    assert.match(stdout, /Add login page/);
+  });
+
+  test("prompts for the title interactively when --title is omitted", async () => {
+    stubCommitsAhead([{ hash: "abc123" }]);
+    bitbucket.stub("POST", PRS_ENDPOINT, {
+      body: prFixture({ id: 1000, title: "From stdin" }),
+    });
+
+    const { code } = await sandbox.runCli(["pr", "create", "feature/login", "main"], {
+      stdin: "From stdin\n",
+    });
+
+    assert.equal(code, 0);
+    const postCall = bitbucket.calls.find((c) => c.method === "POST");
+    assert.ok(postCall, "expected a POST call");
+    assert.equal(postCall.body.title, "From stdin");
+  });
+
+  test("aborts when source has no commits ahead of destination", async () => {
+    stubCommitsAhead([]);
+
+    const { code, stderr } = await sandbox.runCli([
+      "pr",
+      "create",
+      "feature/empty",
+      "main",
+      "--title",
+      "Empty PR",
+    ]);
+
+    assert.notEqual(code, 0);
+    assert.match(stderr, /no commits ahead/i);
+    const postCall = bitbucket.calls.find((c) => c.method === "POST");
+    assert.equal(postCall, undefined, "should not POST when there are no commits ahead");
   });
 });
 

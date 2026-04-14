@@ -18,6 +18,7 @@ export interface IOutputPort {
   preferencesShown(prefs: Preferences): void;
   pullRequestsListed(prs: PullRequest[]): void;
   pullRequestShown(pr: PullRequestDetails): void;
+  pullRequestCreated(pr: PullRequest): void;
   pullRequestDiffShown(diff: string): void;
   commitsListed(commits: Commit[]): void;
   commentsListed(comments: Comment[]): void;
