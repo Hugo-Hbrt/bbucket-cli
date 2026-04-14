@@ -29,15 +29,16 @@ export function compose(): Composition {
   const prompter = new InquirerConfigPrompter();
   const bitbucket = new HttpBitbucketClient(config);
   const git = new GitCliClient();
+  const confirmPrompter = new InquirerConfirmationPrompter();
 
   return {
     configReader: config,
     configWriter: config,
     auth: new AuthService(config, config, prompter),
-    branches: new BranchService(bitbucket),
+    branches: new BranchService(bitbucket, confirmPrompter),
     pullRequests: new PullRequestService(bitbucket, new InquirerPullRequestPrompter(), git),
     pipelines: new PipelineService(bitbucket, makeSleep()),
-    environments: new EnvService(bitbucket, new InquirerConfirmationPrompter()),
+    environments: new EnvService(bitbucket, confirmPrompter),
     preferences: new PreferencesService(config, config),
   };
 }

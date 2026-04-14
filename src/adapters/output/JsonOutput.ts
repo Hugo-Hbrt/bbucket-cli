@@ -25,6 +25,10 @@ export class JsonOutput implements IOutputPort {
     this.print(branches);
   }
 
+  branchDeleted(branchName: string): void {
+    this.print({ deleted: branchName });
+  }
+
   preferencesShown(prefs: Preferences): void {
     this.print(prefs);
   }

@@ -144,6 +144,29 @@ describe("bb branch name <filter>", () => {
   });
 });
 
+describe("bb branch delete <name>", () => {
+  test("DELETEs the branch when --yes is passed", async () => {
+    bitbucket.stub("DELETE", "/2.0/repositories/my-ws/my-repo/refs/branches/feature/old", {
+      body: {},
+    });
+
+    const { code, stdout } = await sandbox.runCli(["branch", "delete", "feature/old", "--yes"]);
+
+    assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
+    assert.match(stdout, /deleted/i);
+    const deleteCall = bitbucket.calls.find((c) => c.method === "DELETE");
+    assert.ok(deleteCall);
+  });
+
+  test("prompts for confirmation and aborts on n", async () => {
+    const result = await sandbox.runCli(["branch", "delete", "feature/old"], { stdin: "n\n" });
+
+    assert.notEqual(result.code, 0);
+    const deleteCall = bitbucket.calls.find((c) => c.method === "DELETE");
+    assert.equal(deleteCall, undefined, "should not DELETE when confirmation is declined");
+  });
+});
+
 describe("bb branch user <filter>", () => {
   test("only includes branches whose latest commit author contains the filter", async () => {
     stubBranches([

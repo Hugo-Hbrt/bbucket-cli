@@ -23,6 +23,10 @@ export class AiOutput implements IOutputPort {
     );
   }
 
+  branchDeleted(branchName: string): void {
+    process.stdout.write(`deleted=${branchName}\n`);
+  }
+
   branchesListed(branches: Branch[]): void {
     for (const branch of branches) {
       const shortHash = branch.commitHash.slice(0, 7);

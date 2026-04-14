@@ -23,6 +23,7 @@ export type CreatePullRequestParams = {
 
 export interface IBitbucketClient {
   listBranches(workspace: string, repoSlug: string): Promise<Branch[]>;
+  deleteBranch(workspace: string, repoSlug: string, branchName: string): Promise<void>;
   listPullRequests(
     workspace: string,
     repoSlug: string,

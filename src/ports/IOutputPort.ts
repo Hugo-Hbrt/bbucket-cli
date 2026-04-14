@@ -15,6 +15,7 @@ export interface IOutputPort {
   authSaved(config: MaskedBbConfig, location: string): void;
   authShown(config: MaskedBbConfig, location: string): void;
   branchesListed(branches: Branch[]): void;
+  branchDeleted(branchName: string): void;
   preferencesShown(prefs: Preferences): void;
   pullRequestsListed(prs: PullRequest[]): void;
   pullRequestShown(pr: PullRequestDetails): void;

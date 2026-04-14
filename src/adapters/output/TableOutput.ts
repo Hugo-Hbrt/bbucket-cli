@@ -205,6 +205,10 @@ export class TableOutput implements IOutputPort {
     process.stdout.write(`${table.toString()}\n`);
   }
 
+  branchDeleted(branchName: string): void {
+    process.stdout.write(`Deleted branch ${branchName}\n`);
+  }
+
   branchesListed(branches: Branch[]): void {
     const table = createTable({
       head: ["Branch", "Commit", "Author", "Updated"],

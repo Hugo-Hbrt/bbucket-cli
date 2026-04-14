@@ -91,6 +91,13 @@ export class HttpBitbucketClient implements IBitbucketClient {
     }));
   }
 
+  async deleteBranch(workspace: string, repoSlug: string, branchName: string): Promise<void> {
+    const response = await this.delete(
+      `/2.0/repositories/${workspace}/${repoSlug}/refs/branches/${encodeURIComponent(branchName)}`,
+    );
+    await ensureOk(response);
+  }
+
   async listPullRequests(
     workspace: string,
     repoSlug: string,
