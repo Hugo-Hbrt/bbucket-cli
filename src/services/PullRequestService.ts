@@ -123,6 +123,21 @@ export class PullRequestService {
     const all = await this._bitbucket.listPullRequestComments(workspace, repoSlug, id);
     return all.filter((c) => matchesCommentFilters(c, filters));
   }
+
+  async merge(
+    workspace: string,
+    repoSlug: string,
+    id: number,
+    strategy: "merge" | "squash" | "fast-forward",
+  ): Promise<void> {
+    const apiStrategy =
+      strategy === "merge" ? "merge_commit" : strategy === "squash" ? "squash" : "fast_forward";
+    await this._bitbucket.mergePullRequest(workspace, repoSlug, id, apiStrategy);
+  }
+
+  async decline(workspace: string, repoSlug: string, id: number): Promise<void> {
+    await this._bitbucket.declinePullRequest(workspace, repoSlug, id);
+  }
 }
 
 export type CommentFilters = {

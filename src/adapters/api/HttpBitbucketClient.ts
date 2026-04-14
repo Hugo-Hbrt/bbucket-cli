@@ -445,6 +445,27 @@ export class HttpBitbucketClient implements IBitbucketClient {
     await ensureOk(response);
   }
 
+  async mergePullRequest(
+    workspace: string,
+    repoSlug: string,
+    id: number,
+    strategy: "merge_commit" | "squash" | "fast_forward",
+  ): Promise<void> {
+    const response = await this.post(
+      `/2.0/repositories/${workspace}/${repoSlug}/pullrequests/${id}/merge`,
+      { type: "pullrequest_merge_parameters", merge_strategy: strategy },
+    );
+    await ensureOk(response);
+  }
+
+  async declinePullRequest(workspace: string, repoSlug: string, id: number): Promise<void> {
+    const response = await this.post(
+      `/2.0/repositories/${workspace}/${repoSlug}/pullrequests/${id}/decline`,
+      {},
+    );
+    await ensureOk(response);
+  }
+
   async getPullRequestDiff(workspace: string, repoSlug: string, id: number): Promise<string> {
     const response = await this.get(
       `/2.0/repositories/${workspace}/${repoSlug}/pullrequests/${id}/diff`,

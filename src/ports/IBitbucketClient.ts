@@ -45,6 +45,13 @@ export interface IBitbucketClient {
   unapprovePullRequest(workspace: string, repoSlug: string, id: number): Promise<void>;
   requestChangesOnPullRequest(workspace: string, repoSlug: string, id: number): Promise<void>;
   unrequestChangesOnPullRequest(workspace: string, repoSlug: string, id: number): Promise<void>;
+  mergePullRequest(
+    workspace: string,
+    repoSlug: string,
+    id: number,
+    strategy: "merge_commit" | "squash" | "fast_forward",
+  ): Promise<void>;
+  declinePullRequest(workspace: string, repoSlug: string, id: number): Promise<void>;
   listPullRequestCommits(workspace: string, repoSlug: string, id: number): Promise<Commit[]>;
   listPullRequestComments(workspace: string, repoSlug: string, id: number): Promise<Comment[]>;
   listPipelines(workspace: string, repoSlug: string): Promise<Pipeline[]>;

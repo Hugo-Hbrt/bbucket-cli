@@ -368,6 +368,31 @@ describe("bb pr commits <id>", () => {
   });
 });
 
+describe("bb pr merge <id>", () => {
+  test("POSTs to the merge endpoint with the default merge_commit strategy", async () => {
+    bitbucket.stub("POST", `${PRS_ENDPOINT}/42/merge`, { body: {} });
+
+    const { code, stdout } = await sandbox.runCli(["pr", "merge", "42"]);
+
+    assert.equal(code, 0, `expected exit 0, stdout: ${stdout}`);
+    assert.match(stdout, /merged/i);
+    const postCall = bitbucket.calls.find(
+      (c) => c.method === "POST" && c.url.includes("/42/merge"),
+    );
+    assert.ok(postCall);
+    assert.equal(postCall.body.merge_strategy, "merge_commit");
+  });
+
+  test("--strategy squash sends squash", async () => {
+    bitbucket.stub("POST", `${PRS_ENDPOINT}/43/merge`, { body: {} });
+
+    await sandbox.runCli(["pr", "merge", "43", "--strategy", "squash"]);
+
+    const postCall = bitbucket.calls.find((c) => c.method === "POST");
+    assert.equal(postCall.body.merge_strategy, "squash");
+  });
+});
+
 describe("bb pr approve <id>", () => {
   test("POSTs to the approve endpoint and confirms", async () => {
     bitbucket.stub("POST", `${PRS_ENDPOINT}/42/approve`, { body: {} });
