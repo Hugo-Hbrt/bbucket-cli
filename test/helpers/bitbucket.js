@@ -6,7 +6,8 @@ export async function startFakeBitbucket() {
 
   const server = createServer((req, res) => {
     calls.push({ method: req.method, url: req.url, headers: req.headers });
-    const key = `${req.method} ${req.url}`;
+    const pathname = req.url.split("?")[0];
+    const key = `${req.method} ${pathname}`;
     const handler = handlers.get(key);
     if (!handler) {
       res.writeHead(404, { "content-type": "application/json" });

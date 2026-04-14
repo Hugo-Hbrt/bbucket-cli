@@ -39,14 +39,13 @@ function branchFixture({
   hash = "abc123def456789",
   date = "2026-04-14T10:00:00Z",
   author = "Alice",
+  authorLinked = true,
 } = {}) {
+  const raw = `${author} <${author.toLowerCase().replace(/\s/g, ".")}@example.com>`;
+  const authorField = authorLinked ? { raw, user: { display_name: author } } : { raw };
   return {
     name,
-    target: {
-      hash,
-      date,
-      author: { user: { display_name: author } },
-    },
+    target: { hash, date, author: authorField },
   };
 }
 
@@ -90,6 +89,16 @@ describe("bb branch list", () => {
     assert.match(stdout, /Jane Doe/, "commit author should be shown");
     assert.match(stdout, /2026-03-20/, "commit date should be shown");
     assert.doesNotMatch(stdout, /abc123def4567890/, "full hash should NOT be shown");
+  });
+
+  test("falls back to parsed raw author when commit has no linked Bitbucket user", async () => {
+    stubBranches([branchFixture({ name: "bot-branch", author: "CI Bot", authorLinked: false })]);
+
+    const { code, stdout } = await sandbox.runCli(["branch", "list"]);
+
+    assert.equal(code, 0, `expected exit 0, got:\n${stdout}`);
+    assert.match(stdout, /bot-branch/);
+    assert.match(stdout, /CI Bot/);
   });
 
   test("--json returns branch objects with name, commitHash, author, updatedAt", async () => {

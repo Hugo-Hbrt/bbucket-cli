@@ -89,6 +89,12 @@ src/
 
 ---
 
+## Bitbucket API reference
+
+The full Bitbucket Cloud REST API v2.0 OpenAPI spec is checked into the repo at `docs/bbucket/swagger.v3.json`. Consult it before writing new adapter code to confirm endpoint paths, request parameters, and response shapes — don't guess the schema from memory or from what another method returns. Pay particular attention to optional fields (e.g. `target.author.user` is only present when the commit author email is linked to a Bitbucket account) and to pagination envelopes (`values`, `next`, `pagelen`, `size`).
+
+---
+
 ## Key behaviours to preserve
 
 - `bb pr create` must abort if the source branch has no commits ahead of destination
