@@ -133,6 +133,47 @@ describe("bb env create-variable", () => {
   });
 });
 
+describe("bb env update-variable", () => {
+  test("PUTs the new value when the variable exists", async () => {
+    stubVariables("{prod-uuid}", [
+      { uuid: "{var-1}", key: "API_URL", value: "old", secured: false },
+    ]);
+    bitbucket.stub("PUT", `${VARIABLES_ENDPOINT("{prod-uuid}")}/{var-1}`, {
+      body: { uuid: "{var-1}", key: "API_URL", value: "new", secured: false },
+    });
+
+    const { code } = await sandbox.runCli([
+      "env",
+      "update-variable",
+      "{prod-uuid}",
+      "{var-1}",
+      "API_URL",
+      "new",
+    ]);
+
+    assert.equal(code, 0);
+    const putCall = bitbucket.calls.find((c) => c.method === "PUT");
+    assert.ok(putCall);
+    assert.equal(putCall.body.value, "new");
+  });
+
+  test("aborts with an error when the variable does not exist", async () => {
+    stubVariables("{prod-uuid}", []);
+
+    const { code, stderr } = await sandbox.runCli([
+      "env",
+      "update-variable",
+      "{prod-uuid}",
+      "{missing-uuid}",
+      "API_URL",
+      "new",
+    ]);
+
+    assert.notEqual(code, 0);
+    assert.match(stderr, /does not exist/i);
+  });
+});
+
 describe("bb env variables <env-uuid>", () => {
   test("lists key, value, and secured status for each variable", async () => {
     stubVariables("{prod-uuid}", [

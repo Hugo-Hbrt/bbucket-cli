@@ -86,20 +86,21 @@ export class EnvService {
     workspace: string,
     repoSlug: string,
     envUuid: string,
+    varUuid: string,
     key: string,
     value: string,
     secured: boolean,
   ): Promise<EnvironmentVariable> {
     const existing = await this._bitbucket.listEnvironmentVariables(workspace, repoSlug, envUuid);
-    const match = existing.find((v) => v.key === key);
+    const match = existing.find((v) => v.uuid === varUuid);
     if (!match) {
-      throw new EnvironmentVariableNotFoundError(key);
+      throw new EnvironmentVariableNotFoundError(varUuid);
     }
     return this._bitbucket.updateEnvironmentVariable(
       workspace,
       repoSlug,
       envUuid,
-      match.uuid,
+      varUuid,
       key,
       value,
       secured,
