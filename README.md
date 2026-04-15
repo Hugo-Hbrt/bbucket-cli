@@ -1,5 +1,10 @@
 # bb — Bitbucket CLI
 
+[![npm version](https://img.shields.io/npm/v/@hugo-hebert/bbucket-cli.svg)](https://www.npmjs.com/package/@hugo-hebert/bbucket-cli)
+[![npm downloads](https://img.shields.io/npm/dm/@hugo-hebert/bbucket-cli.svg)](https://www.npmjs.com/package/@hugo-hebert/bbucket-cli)
+[![license](https://img.shields.io/npm/l/@hugo-hebert/bbucket-cli.svg)](./LICENSE)
+[![node](https://img.shields.io/node/v/@hugo-hebert/bbucket-cli.svg)](https://nodejs.org)
+
 A command-line interface for Bitbucket Cloud. Manage branches, pull requests,
 pipelines, and deployment environments without leaving the terminal.
 
