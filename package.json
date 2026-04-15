@@ -20,10 +20,12 @@
   "keywords": [
     "bitbucket",
     "cli",
+    "bitbucket-cloud",
+    "devops",
+    "developer-tools",
     "pull-request",
     "pipeline",
-    "deployment",
-    "devops"
+    "deployment"
   ],
   "publishConfig": {
     "access": "public"
