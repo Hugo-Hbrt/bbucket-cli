@@ -61,7 +61,7 @@ describe("bb CLI smoke tests", () => {
   test("bb --version prints version", async () => {
     const { code, stdout } = await runCli(["--version"]);
     assert.equal(code, 0);
-    assert.match(stdout, /bb-cli\/\d+\.\d+\.\d+/);
+    assert.match(stdout, /bbucket-cli\/\d+\.\d+\.\d+/);
   });
 
   test("bb --help lists the auth topic", async () => {

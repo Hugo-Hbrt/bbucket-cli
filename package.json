@@ -1,5 +1,5 @@
 {
-  "name": "bb-cli",
+  "name": "@hugo-hbrt/bbucket-cli",
   "version": "0.1.0",
   "description": "Bitbucket CLI — manage branches, pull requests, pipelines, and environments from the terminal",
   "author": "Hugo Hebert",
@@ -9,6 +9,25 @@
     "bb": "./bin/run.js"
   },
   "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hugo-Hbrt/bbucket-cli.git"
+  },
+  "homepage": "https://github.com/Hugo-Hbrt/bbucket-cli#readme",
+  "bugs": {
+    "url": "https://github.com/Hugo-Hbrt/bbucket-cli/issues"
+  },
+  "keywords": [
+    "bitbucket",
+    "cli",
+    "pull-request",
+    "pipeline",
+    "deployment",
+    "devops"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "bin",
     "dist",
@@ -20,6 +39,7 @@
     "check": "biome check --write .",
     "check:ci": "biome check .",
     "test": "npm run build && node --test 'test/**/*.test.js'",
+    "prepublishOnly": "npm run check:ci && npm test",
     "prepack": "npm run build && oclif manifest",
     "postpack": "shx rm -f oclif.manifest.json",
     "dev": "npm run build && ./bin/run.js"
