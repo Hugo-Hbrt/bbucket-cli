@@ -79,7 +79,7 @@ const config = {
           {
             title: "Docs",
             items: [
-              { label: "Getting started", to: "/intro" },
+              { label: "Getting started", to: "/" },
               { label: "Install", to: "/install" },
               { label: "Authentication", to: "/authentication" },
               { label: "Output styles", to: "/output-styles" },
