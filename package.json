@@ -1,6 +1,6 @@
 {
   "name": "@hugo-hebert/bbucket-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Bitbucket CLI — manage branches, pull requests, pipelines, and environments from the terminal",
   "author": "Hugo Hebert",
   "license": "MIT",
