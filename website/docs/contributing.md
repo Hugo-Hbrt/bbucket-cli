@@ -26,39 +26,6 @@ Requires **Node ≥ 18**.
 
 There's no need to `npm link` unless you really want `bb` on your PATH while developing.
 
-## Architecture
-
-`bb` follows clean architecture. Dependency arrows point **inward only**:
-
-```
-commands/         ← Oclif entry points, thin wiring
-    ↓
-services/         ← business logic, depends only on ports
-    ↓
-ports/            ← interfaces (I*)
-    ↓
-domain/           ← pure types + logic, ZERO external imports
-    ↑
-adapters/         ← implementations of ports (HTTP, git, fs, inquirer, ...)
-```
-
-An **acid test** enforces this at build time — `test/smoke.test.js` walks every file under `src/domain`, `src/ports`, and `src/services` and fails if any import escapes the inward-only rule.
-
-## Testing strategy
-
-All tests are **acceptance tests** that spawn the compiled `bin/run.js` as a subprocess and assert on its stdout / stderr / exit code. No unit tests, no internal-module mocks. External dependencies are replaced with in-process fakes:
-
-- **Bitbucket HTTP** — a real `node:http` server that matches stubs by path
-- **git** — a Node script installed on `PATH` that records args to a log file
-- **Browser** — a `LogBrowserOpener` that writes URLs to a log file (swapped in when `BB_BROWSE_LOG` env var is set)
-- **Polling sleep** — `BB_INSTANT_POLL=1` makes `setTimeout` a no-op for pipeline wait tests
-
-Run the full suite:
-
-```bash
-npm test
-```
-
 ## Code style
 
 - **Biome** handles formatting, linting, and import organization. Run `npm run check` to auto-fix.
