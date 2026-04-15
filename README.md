@@ -38,7 +38,7 @@ bb --help                     # everything else
 `bb` uses **Atlassian API tokens** (app passwords are deprecated by Bitbucket
 in June 2026). Create one at **Atlassian Settings → Security → Create and
 manage API tokens → Create API token with scopes**, select *Bitbucket* as the
-app, and grant the scopes listed in [`spec.md`](./spec.md#required-scopes).
+app.
 
 The `email` field is your **Atlassian account email**, not your Bitbucket
 username.
