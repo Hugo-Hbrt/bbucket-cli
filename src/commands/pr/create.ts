@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class PrCreate extends BaseCommand<typeof PrCreate> {
   static override description = "Create a pull request from one branch to another";

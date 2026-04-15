@@ -1,6 +1,6 @@
 import { Args } from "@oclif/core";
 
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class BranchName extends BaseCommand<typeof BranchName> {
   static override description = "List branches whose name contains the given substring";

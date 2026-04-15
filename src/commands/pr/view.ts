@@ -1,6 +1,6 @@
 import { Args } from "@oclif/core";
 
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class PrView extends BaseCommand<typeof PrView> {
   static override description = "Show details of a pull request";

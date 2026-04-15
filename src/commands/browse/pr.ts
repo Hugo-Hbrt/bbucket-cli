@@ -1,6 +1,6 @@
 import { Args } from "@oclif/core";
 
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class BrowsePr extends BaseCommand<typeof BrowsePr> {
   static override description = "Open a specific pull request in the default browser";

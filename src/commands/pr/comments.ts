@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class PrComments extends BaseCommand<typeof PrComments> {
   static override description = "List all comments on a pull request";

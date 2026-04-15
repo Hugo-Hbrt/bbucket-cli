@@ -1,7 +1,6 @@
 import { Args, Flags } from "@oclif/core";
-
+import { BaseCommand } from "../../base-command.js";
 import type { PullRequestState } from "../../domain/types.js";
-import { BaseCommand } from "../base-command.js";
 
 export default class PrList extends BaseCommand<typeof PrList> {
   static override description =

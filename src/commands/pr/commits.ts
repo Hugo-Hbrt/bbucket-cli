@@ -1,6 +1,6 @@
 import { Args } from "@oclif/core";
 
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class PrCommits extends BaseCommand<typeof PrCommits> {
   static override description = "List all commits in a pull request";

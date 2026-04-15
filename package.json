@@ -48,6 +48,24 @@
     "topics": {
       "auth": {
         "description": "Manage Bitbucket authentication credentials"
+      },
+      "branch": {
+        "description": "List, filter, and delete repository branches"
+      },
+      "pr": {
+        "description": "Manage pull requests: list, view, create, review, merge, and more"
+      },
+      "pipeline": {
+        "description": "Trigger, inspect, and wait on Bitbucket Pipelines"
+      },
+      "env": {
+        "description": "Manage deployment environments and their variables"
+      },
+      "browse": {
+        "description": "Open Bitbucket pages in your default browser"
+      },
+      "option": {
+        "description": "Manage persistent CLI preferences"
       }
     }
   }

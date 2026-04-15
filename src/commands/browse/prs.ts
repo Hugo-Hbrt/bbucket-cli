@@ -1,4 +1,4 @@
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class BrowsePrs extends BaseCommand<typeof BrowsePrs> {
   static override description = "Open the pull requests page in the default browser";

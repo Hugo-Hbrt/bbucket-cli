@@ -1,4 +1,4 @@
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class OptionShow extends BaseCommand<typeof OptionShow> {
   static override description = "Display current CLI preferences";

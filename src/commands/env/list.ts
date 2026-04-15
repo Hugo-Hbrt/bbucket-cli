@@ -1,4 +1,4 @@
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class EnvList extends BaseCommand<typeof EnvList> {
   static override description = "List all deployment environments";

@@ -1,6 +1,6 @@
 import { Args } from "@oclif/core";
 
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class PrRequestChanges extends BaseCommand<typeof PrRequestChanges> {
   static override description = "Mark a pull request as 'changes requested'";

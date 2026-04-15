@@ -1,4 +1,4 @@
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class PipelineList extends BaseCommand<typeof PipelineList> {
   static override description = "List recent pipeline runs";

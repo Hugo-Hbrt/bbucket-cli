@@ -1,6 +1,6 @@
 import { Args } from "@oclif/core";
 
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class PrNoApprove extends BaseCommand<typeof PrNoApprove> {
   static override description = "Remove your approval from a pull request";

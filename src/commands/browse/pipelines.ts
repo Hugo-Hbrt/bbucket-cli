@@ -1,4 +1,4 @@
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class BrowsePipelines extends BaseCommand<typeof BrowsePipelines> {
   static override description = "Open the pipelines page in the default browser";

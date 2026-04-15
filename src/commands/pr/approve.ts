@@ -1,6 +1,6 @@
 import { Args } from "@oclif/core";
 
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class PrApprove extends BaseCommand<typeof PrApprove> {
   static override description = "Approve a pull request";

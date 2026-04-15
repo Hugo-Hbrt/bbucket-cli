@@ -1,6 +1,6 @@
 import { Args } from "@oclif/core";
 
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class PrNoRequestChanges extends BaseCommand<typeof PrNoRequestChanges> {
   static override description = "Remove the 'changes requested' status from a pull request";

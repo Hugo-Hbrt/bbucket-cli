@@ -1,6 +1,6 @@
 import { Args } from "@oclif/core";
 
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class PrDecline extends BaseCommand<typeof PrDecline> {
   static override description = "Decline a pull request";

@@ -1,5 +1,5 @@
+import { BaseCommand } from "../../base-command.js";
 import type { OutputStyle } from "../../domain/types.js";
-import { BaseCommand } from "../base-command.js";
 
 export default class Option extends BaseCommand<typeof Option> {
   static override description = "Manage CLI preferences. Pass --output-style to set a default.";

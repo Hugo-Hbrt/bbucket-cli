@@ -1,4 +1,4 @@
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class BrowseRepo extends BaseCommand<typeof BrowseRepo> {
   static override description = "Open the repository homepage in the default browser";

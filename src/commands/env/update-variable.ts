@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class EnvUpdateVariable extends BaseCommand<typeof EnvUpdateVariable> {
   static override description = "Update an existing variable in a deployment environment";

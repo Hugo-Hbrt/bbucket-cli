@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class PrMerge extends BaseCommand<typeof PrMerge> {
   static override description = "Merge a pull request";

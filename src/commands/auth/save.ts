@@ -1,4 +1,4 @@
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class AuthSave extends BaseCommand<typeof AuthSave> {
   static override description =

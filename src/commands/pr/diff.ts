@@ -1,6 +1,6 @@
 import { Args } from "@oclif/core";
 
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class PrDiff extends BaseCommand<typeof PrDiff> {
   static override description = "Print the raw diff of a pull request to stdout";

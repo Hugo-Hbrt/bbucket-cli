@@ -1,6 +1,6 @@
 import { Args } from "@oclif/core";
 
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class PipelineCustom extends BaseCommand<typeof PipelineCustom> {
   static override description = "Trigger a custom pipeline by name for a branch";

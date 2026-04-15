@@ -1,6 +1,6 @@
 import { Args } from "@oclif/core";
 
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class PrCheckout extends BaseCommand<typeof PrCheckout> {
   static override description = "Fetch and check out the source branch of a pull request";

@@ -1,4 +1,4 @@
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class AuthShow extends BaseCommand<typeof AuthShow> {
   static override description = "Show saved Bitbucket credentials (API token masked)";

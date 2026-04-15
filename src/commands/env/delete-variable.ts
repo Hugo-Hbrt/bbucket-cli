@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class EnvDeleteVariable extends BaseCommand<typeof EnvDeleteVariable> {
   static override description = "Delete a variable from a deployment environment";

@@ -1,12 +1,12 @@
 import { Command, Flags, type Interfaces } from "@oclif/core";
 
-import { AiOutput } from "../adapters/output/AiOutput.js";
-import { JsonOutput } from "../adapters/output/JsonOutput.js";
-import { TableOutput } from "../adapters/output/TableOutput.js";
-import { type Composition, compose } from "../composition.js";
-import { BbConfigNotFoundError, DomainError } from "../domain/errors.js";
-import type { BbConfig } from "../domain/types.js";
-import type { IOutputPort } from "../ports/IOutputPort.js";
+import { AiOutput } from "./adapters/output/AiOutput.js";
+import { JsonOutput } from "./adapters/output/JsonOutput.js";
+import { TableOutput } from "./adapters/output/TableOutput.js";
+import { type Composition, compose } from "./composition.js";
+import { BbConfigNotFoundError, DomainError } from "./domain/errors.js";
+import type { BbConfig } from "./domain/types.js";
+import type { IOutputPort } from "./ports/IOutputPort.js";
 
 export type BaseFlags<T extends typeof Command> = Interfaces.InferredFlags<
   (typeof BaseCommand)["baseFlags"] & T["flags"]

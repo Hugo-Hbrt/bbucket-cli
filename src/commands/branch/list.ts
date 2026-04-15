@@ -1,4 +1,4 @@
-import { BaseCommand } from "../base-command.js";
+import { BaseCommand } from "../../base-command.js";
 
 export default class BranchList extends BaseCommand<typeof BranchList> {
   static override description = "List all branches in the repository";
