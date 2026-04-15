@@ -1,5 +1,5 @@
 {
-  "name": "@hugo-hbrt/bbucket-cli",
+  "name": "@hugo-hebert/bbucket-cli",
   "version": "0.1.0",
   "description": "Bitbucket CLI — manage branches, pull requests, pipelines, and environments from the terminal",
   "author": "Hugo Hebert",

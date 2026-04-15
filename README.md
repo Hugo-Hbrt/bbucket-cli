@@ -6,13 +6,13 @@ pipelines, and deployment environments without leaving the terminal.
 ## Install
 
 ```bash
-npm install -g @hugo-hbrt/bbucket-cli
+npm install -g @hugo-hebert/bbucket-cli
 ```
 
 Or run without installing:
 
 ```bash
-npx @hugo-hbrt/bbucket-cli auth
+npx @hugo-hebert/bbucket-cli auth
 ```
 
 ## Quick start
