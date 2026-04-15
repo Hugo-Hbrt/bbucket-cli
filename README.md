@@ -3,6 +3,8 @@
 A command-line interface for Bitbucket Cloud. Manage branches, pull requests,
 pipelines, and deployment environments without leaving the terminal.
 
+📖 **Full documentation**: <https://hugo-hbrt.github.io/bbucket-cli/>
+
 ## Install
 
 ```bash
@@ -48,7 +50,7 @@ Set a persistent default with `bb option --output-style ai`.
 
 ## Status
 
-Work in progress. Full documentation site coming soon.
+Work in progress. See the [docs site](https://hugo-hbrt.github.io/bbucket-cli/) for full guides and command reference.
 
 ## License
 

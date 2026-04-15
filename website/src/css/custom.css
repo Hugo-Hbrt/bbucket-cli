@@ -1,0 +1,27 @@
+/**
+ * Minimal theme overrides. Docusaurus ships with sensible defaults —
+ * we just tweak the accent colour.
+ */
+
+:root {
+  --ifm-color-primary: #2684ff;
+  --ifm-color-primary-dark: #0d6ff2;
+  --ifm-color-primary-darker: #0c69e5;
+  --ifm-color-primary-darkest: #0a57bc;
+  --ifm-color-primary-light: #4095ff;
+  --ifm-color-primary-lighter: #4e9cff;
+  --ifm-color-primary-lightest: #75b3ff;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+  --ifm-color-primary: #4c9aff;
+  --ifm-color-primary-dark: #2985ff;
+  --ifm-color-primary-darker: #1a7cff;
+  --ifm-color-primary-darkest: #0062e6;
+  --ifm-color-primary-light: #6fafff;
+  --ifm-color-primary-lighter: #7fb8ff;
+  --ifm-color-primary-lightest: #b3d3ff;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
