@@ -9,7 +9,7 @@ A command-line interface for Bitbucket Cloud. Manage branches, pull requests,
 pipelines, and deployment environments without leaving the terminal.
 
 <p align="center">
-  <img src="docs/bb-demo.gif" alt="bb CLI demo — pr view, pipeline wait, env variables" width="800">
+  <img src="https://raw.githubusercontent.com/Hugo-Hbrt/bbucket-cli/main/docs/bb-demo.gif" alt="bb CLI demo — pr view, pipeline wait, env variables" width="800">
 </p>
 
 📖 **Full documentation**: <https://hugo-hbrt.github.io/bbucket-cli/>
